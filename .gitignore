@@ -1,0 +1,9 @@
+*.suo
+*.csproj.user
+*~
+*.cb.b[123]
+TestFiles/DemoVEngrave1.nc
+TestFiles/TestXMLSerialization.xml
+VEngrave_Plugin/obj/
+VEngrave_UnitTests/bin/
+VEngrave_UnitTests/obj/

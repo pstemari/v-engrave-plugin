@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CADFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="0.9.8.0" Name="superconvexpam85" units="Inches">
+  <layers>
+    <layer name="Default" color="127,255,0">
+      <ModificationCount>0</ModificationCount>
+      <objects>
+        <pline id="1">
+          <ModificationCount>3</ModificationCount>
+          <mat m="Identity" />
+          <pts>
+            <p>-0.5,-0.6,0</p>
+            <p>-0.5,0.4,0</p>
+          </pts>
+        </pline>
+        <pline id="2">
+          <ModificationCount>6</ModificationCount>
+          <mat m="Identity" />
+          <pts>
+            <p b="-0.087488663525924021">-0.465204033683775,-0.600758164317128,0</p>
+            <p>-0.432568851450468,-0.612636399239905,0</p>
+          </pts>
+        </pline>
+      </objects>
+    </layer>
+  </layers>
+  <MachiningOptions>
+    <Stock>
+      <PMin>0,0</PMin>
+      <PMax>0,0</PMax>
+      <Color>255,165,0</Color>
+    </Stock>
+    <ToolProfile>Unspecified</ToolProfile>
+  </MachiningOptions>
+  <parts />
+  <ActiveLayer>Default</ActiveLayer>
+</CADFile>
