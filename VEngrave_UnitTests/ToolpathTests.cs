@@ -25,24 +25,20 @@ using CamBam.Geom;
 using VEngraveForCamBam;
 using VEngraveForCamBam.CamBamExtensions;
 
+using GA = VEngrave_UnitTests.GeometryAssertions;
+
 namespace VEngrave_UnitTests {
   [TestClass]
   public class ToolpathTests {
     private const double DEGREES = Math.PI/180;
-    private static void AssertApproxEqual(
-      string msg, double expected, double actual) {
-      Assert.AreEqual(expected, actual,
-                      Math.Max(1e-12, 1e-8*Math.Max(Math.Abs(expected),
-                                                    Math.Abs(actual))), msg);
-    }
 
-    private MOPVEngrave _CreateMOP() {
+    private MOPVEngrave CreateMOP() {
       var mop = new MOPVEngrave();
-      mop.setLogger(new NullLogger());
+      mop.SetLogger(new NullLogger());
       return mop;
     }
 
-    private Point3F _GetNearestPoint(Polyline polyline, Point3F point) {
+    private Point3F GetNearestPoint(Polyline polyline, Point3F point) {
       Point3F nearest = new Point3F();
       double closest_approach = Double.MaxValue;
       foreach (PolylineItem item in polyline.Points) {
@@ -55,7 +51,7 @@ namespace VEngrave_UnitTests {
       return nearest;
     }
 
-    private static void _TestCornerType(Polyline outline, int corner,
+    private static void TestCornerType(Polyline outline, int corner,
                                         Geometry.CornerType expected,
                                         string msg) {
       Vector2F nextNormal;
@@ -67,17 +63,17 @@ namespace VEngrave_UnitTests {
                       msg);
     }
 
-    private void _TestCorner(Polyline outline, int corner,
+    private void TestCorner(Polyline outline, int corner,
                              double expected, string msg) {
       bool leftIsInside = outline.Direction == RotationDirection.CCW;
       var outlines = new List<Polyline>(new Polyline[] { outline });
-      _TestCorner(outline, corner, outlines, leftIsInside, expected, msg);
+      TestCorner(outline, corner, outlines, leftIsInside, expected, msg);
     }
 
-    private void _TestCorner(Polyline outline, int corner,
-                             List<Polyline> outlines, bool leftIsInside,
-                             double expected, string msg) {
-      var mop = _CreateMOP();
+    private void TestCorner(Polyline outline, int corner,
+                            List<Polyline> outlines, bool leftIsInside,
+                            double expected, string msg) {
+      var mop = CreateMOP();
       var toolpath = new Polyline();
       Vector2F normal, normal2;
       int previ = outline.PrevSegment(corner);
@@ -89,12 +85,14 @@ namespace VEngrave_UnitTests {
       Geometry.CornerType endCornerType
         =  Geometry.GetCornerType(outline, corner, 135*DEGREES,
                                   leftIsInside, out normal2);
-      AssertApproxEqual(msg + " incoming", expected,
-                        mop._AnalyzePoint(outline, previ, cornerPoint,
-                                          normal2, Double.MaxValue, outlines,
-                                          startCornerType, endCornerType,
-                                          toolpath, leftIsInside));
-      Assert.AreEqual(1, toolpath.Points.Count, msg + " incoming point not added");
+      GA.AssertAreApproxEqual(msg + " incoming", expected,
+                              mop.AnalyzePoint(outline, previ, cornerPoint,
+                                               normal2, Double.MaxValue,
+                                               outlines, startCornerType,
+                                               endCornerType, toolpath,
+                                               leftIsInside));
+      Assert.AreEqual(1, toolpath.Points.Count,
+                      msg + " incoming point not added");
       startCornerType = endCornerType;
       normal = Geometry.GetDirection(outline.Points[corner],
                                      outline.Points[nexti],
@@ -105,80 +103,82 @@ namespace VEngrave_UnitTests {
       endCornerType = Geometry.GetCornerType(outline, corner, 135*DEGREES,
                                              leftIsInside, out normal2);
       toolpath = new Polyline();
-      AssertApproxEqual(msg + " outgoing", expected,
-                        mop._AnalyzePoint(outline, corner, cornerPoint,
-                                          normal, Double.MaxValue, outlines,
-                                          startCornerType, endCornerType,
-                                          toolpath, leftIsInside));
-      Assert.AreEqual(1, toolpath.Points.Count, msg + " outgoing point not added");
+      GA.AssertAreApproxEqual(msg + " outgoing", expected,
+                              mop.AnalyzePoint(outline, corner, cornerPoint,
+                                               normal, Double.MaxValue,
+                                               outlines, startCornerType,
+                                               endCornerType, toolpath,
+                                               leftIsInside));
+      Assert.AreEqual(1, toolpath.Points.Count,
+                      msg + " outgoing point not added");
     }
 
-    [TestMethod, TestCategory("Large"), TestCategory("Repro")]
+    [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestCornerOvershoot() {
-      _TestCorner(MBottom1(), 7, 0.0, "CornerOvershoot");
+      TestCorner(MBottom1(), 7, 0.0, "CornerOvershoot");
     }
 
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestCommaBottom() {
       Polyline comma = Comma();
-      _TestCorner(comma, COMMA_RIGHT_CORNER, 0.0, "Right");
-      _TestCorner(comma, COMMA_LEFT_CORNER, 0.0, "Left");
+      TestCorner(comma, COMMA_RIGHT_CORNER, 0.0, "Right");
+      TestCorner(comma, COMMA_LEFT_CORNER, 0.0, "Left");
     }
 
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestLTopCorner() {
       Polyline ltop = LTop();
-      _TestCorner(ltop, LTOP_LEFT_SERIF_BOTTOM, 0.0,
-                  "bottom corner of left serif");
-      _TestCorner(ltop, LTOP_LEFT_SERIF_TOP, 0.0, "top corner of left serif");
-      _TestCorner(ltop, LTOP_TOP_RIGHT, 0.0, "top right");
+      TestCorner(ltop, LTOP_LEFT_SERIF_BOTTOM, 0.0,
+                 "bottom corner of left serif");
+      TestCorner(ltop, LTOP_LEFT_SERIF_TOP, 0.0, "top corner of left serif");
+      TestCorner(ltop, LTOP_TOP_RIGHT, 0.0, "top right");
     }
 
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestMBottomCorners() {
       Polyline mbottom = MBottom();
-      _TestCorner(mbottom, MBOTTOM_LEFT_SERIF_TOP, 0.0, "Left serif top");
-      _TestCorner(mbottom, MBOTTOM_LEFT_SERIF_BOTTOM, 0.0,
-                  "Left serif bottom");
-      _TestCorner(mbottom, MBOTTOM_RIGHT_SERIF_TOP, 0.0, "Right serif bottom");
-      _TestCorner(mbottom, MBOTTOM_RIGHT_SERIF_BOTTOM, 0.0, "Right serif top");
+      TestCorner(mbottom, MBOTTOM_LEFT_SERIF_TOP, 0.0, "Left serif top");
+      TestCorner(mbottom, MBOTTOM_LEFT_SERIF_BOTTOM, 0.0,
+                 "Left serif bottom");
+      TestCorner(mbottom, MBOTTOM_RIGHT_SERIF_TOP, 0.0, "Right serif bottom");
+      TestCorner(mbottom, MBOTTOM_RIGHT_SERIF_BOTTOM, 0.0, "Right serif top");
     }
 
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestMBottomCornerTypes() {
       Polyline mbottom = MBottom();
-      _TestCornerType(mbottom, MBOTTOM_LEFT_SERIF_TOP,
+      TestCornerType(mbottom, MBOTTOM_LEFT_SERIF_TOP,
                       Geometry.CornerType.SharpInside, "Left serif top");
-      _TestCornerType(mbottom, MBOTTOM_LEFT_SERIF_BOTTOM,
+      TestCornerType(mbottom, MBOTTOM_LEFT_SERIF_BOTTOM,
                       Geometry.CornerType.SharpInside, "Left serif bottom");
-      _TestCornerType(mbottom, MBOTTOM_RIGHT_SERIF_TOP,
+      TestCornerType(mbottom, MBOTTOM_RIGHT_SERIF_TOP,
                       Geometry.CornerType.SharpInside, "Right serif bottom");
-      _TestCornerType(mbottom, MBOTTOM_RIGHT_SERIF_BOTTOM,
+      TestCornerType(mbottom, MBOTTOM_RIGHT_SERIF_BOTTOM,
                       Geometry.CornerType.SharpInside, "Right serif top");
     }
-    [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
+    [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestLTopOutlineCorners() {
-      MOPVEngrave mop = _CreateMOP();
+      MOPVEngrave mop = CreateMOP();
       ToolpathSequence tseq = new ToolpathSequence(mop);
       var outline = LTop();
       var outlines = new List<Polyline>(new Polyline[] {outline});
-      mop._FollowOutline(tseq, outline, outlines,
+      mop.FollowOutline(tseq, outline, outlines,
                          outlineID: new EntityIdentifier(1), parentID: -1,
                          offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
       Assert.IsNotNull(tseq.Toolpaths[0]);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
-      Point3F npc1 = _GetNearestPoint(tseq.Toolpaths[0].Toolpath,
+      Point3F npc1 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
                                       outline.Points[LTOP_LEFT_SERIF_BOTTOM].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
           npc1, outline.Points[LTOP_LEFT_SERIF_BOTTOM].Point), 1e-5,
           "L top left serif bottom");
-      Point3F npc2 = _GetNearestPoint(tseq.Toolpaths[0].Toolpath,
+      Point3F npc2 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
                                       outline.Points[LTOP_LEFT_SERIF_TOP].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
           npc2, outline.Points[LTOP_LEFT_SERIF_TOP].Point), 1e-5,
           "L top left serif top");
-      Point3F npc3 = _GetNearestPoint(tseq.Toolpaths[0].Toolpath,
+      Point3F npc3 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
                                       outline.Points[LTOP_TOP_RIGHT].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
           npc3, outline.Points[LTOP_TOP_RIGHT].Point), 1e-5,
@@ -186,22 +186,22 @@ namespace VEngrave_UnitTests {
     }
     [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
     public void TestCommaOutlineCorners() {
-      MOPVEngrave mop = _CreateMOP();
+      MOPVEngrave mop = CreateMOP();
       ToolpathSequence tseq = new ToolpathSequence(mop);
       var outline = Comma();
       var outlines = new List<Polyline>(new Polyline[] { outline });
-      mop._FollowOutline(tseq, outline, outlines,
+      mop.FollowOutline(tseq, outline, outlines,
                          outlineID: new EntityIdentifier(1), parentID: -1,
                          offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
       Assert.IsNotNull(tseq.Toolpaths[0]);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
-      Point3F npc1 = _GetNearestPoint(tseq.Toolpaths[0].Toolpath,
+      Point3F npc1 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
                                       outline.Points[COMMA_LEFT_CORNER].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
           npc1, outline.Points[COMMA_LEFT_CORNER].Point), 1e-5,
           "Comma left corner");
-      Point3F npc2 = _GetNearestPoint(tseq.Toolpaths[0].Toolpath,
+      Point3F npc2 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
                                       outline.Points[COMMA_RIGHT_CORNER].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
           npc2, outline.Points[COMMA_RIGHT_CORNER].Point), 1e-5,
@@ -209,13 +209,13 @@ namespace VEngrave_UnitTests {
     }
     [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
     public void TestTestVEngrave3DotCBBase1() {
-      MOPVEngrave mop = _CreateMOP();
+      MOPVEngrave mop = CreateMOP();
       ToolpathSequence tseq = new ToolpathSequence(mop);
       var outline = TestVEngrave3DotCBOutlineBase1();
       var outlines = new List<Polyline>(new Polyline[] { outline });
       var errorBox = TestVEngrave3DotCBErrorBoxBase1();
       var boundary = TestVEngrave3DotCBToolpathOuterBoundaryBase1();
-      mop._FollowOutline(tseq, outline, outlines,
+      mop.FollowOutline(tseq, outline, outlines,
                          outlineID: new EntityIdentifier(1), parentID: -1,
                          offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
@@ -230,14 +230,14 @@ namespace VEngrave_UnitTests {
     }
     [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
     public void TestTestVEngrave3DotCBBang() {
-      MOPVEngrave mop = _CreateMOP();
+      MOPVEngrave mop = CreateMOP();
       ToolpathSequence tseq = new ToolpathSequence(mop);
       var outline = TestVEngrave3DotCBOutlineBang();
       var outlines = new List<Polyline>(new Polyline[] { outline });
       var errorBox1 = TestVEngrave3DotCBErrorBox1Bang();
       var errorBox2 = TestVEngrave3DotCBErrorBox2Bang();
       var boundary = TestVEngrave3DotCBToolpathOuterBoundaryBang();
-      mop._FollowOutline(tseq, outline, outlines,
+      mop.FollowOutline(tseq, outline, outlines,
                          outlineID: new EntityIdentifier(1), parentID: -1,
                          offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
@@ -254,13 +254,13 @@ namespace VEngrave_UnitTests {
     }
     [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
     public void TestTestVEngrave4DotCB() {
-      MOPVEngrave mop = _CreateMOP();
+      MOPVEngrave mop = CreateMOP();
       ToolpathSequence tseq = new ToolpathSequence(mop);
       var outline = TestVEngrave4DotCBOutline();
       var outlines = new List<Polyline>(new Polyline[] { outline });
       var errorBox = TestVEngrave4DotCBErrorBox();
       var boundary = TestVEngrave4DotCBToolpathOuterBoundary();
-      mop._FollowOutline(tseq, outline, outlines,
+      mop.FollowOutline(tseq, outline, outlines,
                          outlineID: new EntityIdentifier(1), parentID: -1,
                          offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);

@@ -25,6 +25,7 @@ using CamBam.Geom.BSP;
 using CamBam.Values;
 
 using VEngraveForCamBam.CamBamExtensions;
+using GA = VEngrave_UnitTests.GeometryAssertions;
 
 namespace VEngrave_UnitTests {
   [TestClass]
@@ -78,6 +79,42 @@ namespace VEngrave_UnitTests {
       Assert.AreEqual(3, pl.Points.Count);
       Assert.AreEqual(2, pl.PrevSegment(0));
       Assert.AreEqual(0, pl.NextSegment(2));
+    }
+    [TestMethod, TestCategory("Small")]
+    public void TestPoint2F() {
+      Assert.AreEqual(new Point2F(0, 0), new Point2F());
+      Assert.IsTrue(new Point2F(1, double.NaN).IsUndefined);
+      Assert.IsTrue(new Point2F(double.NaN, 2).IsUndefined);
+      Assert.IsFalse(new Point2F(-1, -1).IsUndefined);
+      Assert.IsFalse(new Point2F(-1, 0).IsUndefined);
+      Assert.IsFalse(new Point2F(-1, 1).IsUndefined);
+      Assert.IsFalse(new Point2F(0, -1).IsUndefined);
+      Assert.IsFalse(new Point2F(0, 0).IsUndefined);
+      Assert.IsFalse(new Point2F(0, 1).IsUndefined);
+      Assert.IsFalse(new Point2F(1, -1).IsUndefined);
+      Assert.IsFalse(new Point2F(1, 0).IsUndefined);
+      Assert.IsFalse(new Point2F(1, 1).IsUndefined);
+    }
+    [TestMethod, TestCategory("Small")]
+    public void TestPoint3F() {
+      Assert.AreEqual(new Point3F(0, 0, 0), new Point3F());
+      Assert.IsTrue(new Point3F(double.NaN, 0, 1).IsUndefined);
+      Assert.IsTrue(new Point3F(2, double.NaN, -3).IsUndefined);
+      Assert.IsTrue(new Point3F(-4, 5, double.NaN).IsUndefined);
+      for (double x = -1; x < 1.1; ++x) {
+        for (double y = -1; y < 1.1; ++y) {
+          for (double z = -1; z < 1.1; ++z) {
+            Assert.IsFalse(new Point3F(x, y, z).IsUndefined);
+          }
+        }
+      }
+      Assert.IsTrue(new Point3F(0, 0, 0).IsZero);
+      Assert.IsFalse(new Point3F(-double.Epsilon, 0, 0).IsZero);
+      Assert.IsFalse(new Point3F(double.Epsilon, 0, 0).IsZero);
+      Assert.IsFalse(new Point3F(0, -double.Epsilon, 0).IsZero);
+      Assert.IsFalse(new Point3F(0, double.Epsilon, 0).IsZero);
+      Assert.IsFalse(new Point3F(0, 0, -double.Epsilon).IsZero);
+      Assert.IsFalse(new Point3F(0, 0, double.Epsilon).IsZero);
     }
     [TestMethod, TestCategory("Small")]
     public void TestPointInPolyline() {
@@ -183,15 +220,12 @@ namespace VEngrave_UnitTests {
       int nearestSegment = -1;
       Point3F nearestPoint = pl.GetNearestPoint(
           new Point2F(.5, .25), ref nearestNormal, ref nearestSegment);
-      Assert.IsTrue(Point3F.Distance(nearestPoint,
-                                     new Point3F(0.5, 0, 0)) < 1e-10,
-                                     "nearestPoint too far away");
+      GA.AssertAreApproxEqual(new Point3F(0.5, 0, 0), nearestPoint, 1e-10);
       Assert.AreEqual(0, nearestSegment, "nearestSegment");
       // normal goes from point to polyline
-      Assert.IsTrue(Point2F.Distance(new Point2F(0, -1),
-                                     new Point2F(nearestNormal.X,
-                                                 nearestNormal.Y)) < 1e-10,
-                                     "nearestNormal too far away");
+      GA.AssertAreApproxEqual(new Point2F(0, -1), new Point2F(nearestNormal.X,
+                                                              nearestNormal.Y),
+                              1e-10);
     }
     [TestMethod, TestCategory("Small")]
     public void TestLine2FIntersect() {
@@ -202,30 +236,49 @@ namespace VEngrave_UnitTests {
       var a = new Line2F(p00, p11);
       var b = new Line2F(p10, p01);
       Line2F result;
+      // A simple crossing gives one point
       result = Line2F.Intersect(a, b);
       Assert.IsTrue(result.IsUndefined);
-      Assert.AreEqual(new Point2F(0.5, 0.5), result.p1);
+      GA.AssertAreApproxEqual(new Point2F(0.5, 0.5), result.p1);
       Assert.IsTrue(result.p2.IsUndefined);
+
+      // Self-intersect gives undefined
       result = Line2F.Intersect(a, a);
       Assert.IsTrue(result.IsUndefined);
       Assert.IsTrue(result.p1.IsUndefined);
       Assert.IsTrue(result.p2.IsUndefined);
+
+      // Stopping short of intersect gives undefined
       var c = new Line2F(p00, new Point2F(0.25, 0.25));
       result = Line2F.Intersect(c, b);
       Assert.IsTrue(result.IsUndefined);
       Assert.IsTrue(result.p1.IsUndefined);
       Assert.IsTrue(result.p2.IsUndefined);
+
+      // T-intersect gives single point
       var d = new Line2F(p00, new Point2F(0.5, 0.5));
       result = Line2F.Intersect(d, b);
       Assert.IsTrue(result.IsUndefined);
       Assert.AreEqual(new Point2F(0.5, 0.5), result.p1);
       Assert.IsTrue(result.p2.IsUndefined);
+
+      // Parallel lines give undefined
       var e = new Line2F(p00, p01);
       var f = new Line2F(p10, p11);
       result = Line2F.Intersect(e, f);
       Assert.IsTrue(result.IsUndefined);
       Assert.IsTrue(result.p1.IsUndefined);
       Assert.IsTrue(result.p2.IsUndefined);
+
+      // Overlapping (but distinct) lines give overlapping section
+      var quarter_point = new Point2F(0.25, 0.25);
+      var three_quarter_point = new Point2F(0.75, 0.75);
+      var g = new Line2F(p00, three_quarter_point);
+      var h = new Line2F(quarter_point, p11);
+      result = Line2F.Intersect(g, h);
+      Assert.IsFalse(result.IsUndefined);
+      Assert.AreEqual(quarter_point, result.p1);
+      Assert.AreEqual(three_quarter_point, result.p2);
     }
     [TestMethod, TestCategory("Small")]
     public void TestLine2FOverlaps() {
@@ -375,7 +428,7 @@ namespace VEngrave_UnitTests {
       Assert.IsTrue(triangle.PointInTriangleNew(new Point2F(0.5, +1e-3)));
       Assert.IsTrue(triangle.PointInTriangleNew(new Point2F(0.5, +1e-1)));
     }
-    [TestMethod, TestCategory("Small")]
+    [TestMethod, TestCategory("Medium")]
     public void TestTriangle3F() {
       var a = new Point3F(0.0, 0.0, 0.0);
       var b = new Point3F(1.0, 0.0, 0.0);
@@ -410,6 +463,13 @@ namespace VEngrave_UnitTests {
       Assert.AreEqual(0.5, triangle.ZAtPoint(new Point2F(1.0, 0.5)), 1e-10);
       Assert.AreEqual(0.5, triangle.ZAtPoint(new Point2F(10.0, 0.5)), 1e-10);
       Assert.AreEqual(10.0, triangle.ZAtPoint(new Point2F(1.0, 10.0)), 1e-10);
+    }
+    [TestMethod, TestCategory("Small")]
+    public void TestTriangle3FLinePlaneIntersection() {
+      var a = new Point3F(0.0, 0.0, 0.0);
+      var b = new Point3F(1.0, 0.0, 0.0);
+      var c = new Point3F(1.0, 1.0, 1.0);
+      var triangle = new Triangle3F(a, b, c);
 
       Point3F intersect = triangle.LinePlaneIntersection(new Point3F(0.5, 0.0, 0.25),
                                                          new Point3F(0.5, 1.0, 0.25));
@@ -424,6 +484,27 @@ namespace VEngrave_UnitTests {
       Point3F notintersect = triangle.LinePlaneIntersection(new Point3F(0.5, 0.0, 0.75),
                                                             new Point3F(0.5, 1.0, 1.75));
       Assert.IsTrue(notintersect.IsUndefined);
+
+      var e2d = new Point2F(0.2, 0.3);
+      var ez0 = triangle.ZAtPoint(e2d);
+      var f2d = new Point2F(0.3, 0.2);
+      var fz0 = triangle.ZAtPoint(f2d);
+      for (double offset = 0.1; offset > 5e-8; offset /= 2) {
+        var e = e2d.To3D(ez0 + offset);
+        var f = f2d.To3D(fz0 - offset);
+        var offsetInterect = triangle.LinePlaneIntersection(e, f);
+        GA.AssertAreApproxEqual(new Point3F(0.25, 0.25, 0.25), offsetInterect);
+      }
+      triangle = new Triangle3F(
+          new Point3F(1.10455260341352, 1.10864904182517, 0),
+          new Point3F(1.10366597719706, 1.10753169851535, -0.00101254294727068),
+          new Point3F(1.10445890833639, 1.10690201333341, 0));
+      var v1 = new Point3F(1.10366597719706, 1.10753169851535, 
+                           -0.00101254294727068);
+      var v2 = new Point3F(1.10455260341339, 1.10864904182497,
+                           -1.27897692436818E-13);
+      Point3F problemIntersection = triangle.LinePlaneIntersection(v1, v2);
+      Assert.IsTrue(problemIntersection.IsUndefined);
     }
     [TestMethod, TestCategory("Medium")]
     public void TestBSPNode() {
