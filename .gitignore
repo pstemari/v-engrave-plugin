@@ -2,8 +2,9 @@
 *.csproj.user
 *~
 *.cb.b[123]
-TestFiles/DemoVEngrave1.nc
+TestFiles/*.nc
 TestFiles/TestXMLSerialization.xml
+VEngrave_Plugin/bin/
 VEngrave_Plugin/obj/
 VEngrave_UnitTests/bin/
 VEngrave_UnitTests/obj/

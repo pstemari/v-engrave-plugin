@@ -1,4 +1,4 @@
-﻿/* -*- mode: csharp; c-basic-offset: 2 -*- 
+﻿/* -*- mode: csharp; c-basic-offset: 2 -*-
  * Copyright 2013 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -267,8 +267,8 @@ namespace VEngraveForCamBam {
     private Logger _log = new CamBamLogger();
     internal void SetLogger(Logger newValue) { _log = newValue; }
 
-    #region Properties
-    #region UIProperties
+#region Properties
+#region UIProperties
     // UI properties
     [XmlIgnore]
     System.Drawing.Image IIcon.ActiveIconImage {
@@ -289,11 +289,11 @@ namespace VEngraveForCamBam {
     string IIcon.InactiveIconKey {
       get { return "VCarveButton"; }
     }
-    #endregion
+#endregion
 
-    #region OperationProperties
+#region OperationProperties
     // Operation properties
-    #region PathIncrementProperty
+#region PathIncrementProperty
     const double DEFAULT_PATH_INCREMENT = 0.001;
     [DisplayName("Path Step Size"),
      Description("Length of step in path"),
@@ -321,8 +321,8 @@ namespace VEngraveForCamBam {
     }
     [XmlElement("PathIncrement")]
     private CBValue<double> _pathIncrement;
-    #endregion
-    #region MaxCornerAngleProperty
+#endregion
+#region MaxCornerAngleProperty
     const double DEFAULT_MAX_CORNER_ANGLE = 135.0;    // degrees
     [DisplayName("Max Corner Angle"),
      Description("Maximum corner angle for sharp corners. "
@@ -354,8 +354,8 @@ namespace VEngraveForCamBam {
     }
     [XmlElement("MaxCornerAngle")]
     private CBValue<double> _maxCornerAngle;
-    #endregion
-    #region MaxDepthProperty
+#endregion
+#region MaxDepthProperty
     [DisplayName("Max Depth"),
      Description("Maximum depth for cuts"), Category("Cutting Depth"),
      XmlIgnore]
@@ -384,8 +384,8 @@ namespace VEngraveForCamBam {
       return 0.5*(ToolDiameter.Cached - ToolTipDiameter.Cached)
         /Math.Tan(0.5*ToolVAngle.Cached*DEGREES);
     }
-    #endregion
-    #region ToolTipDiameterProperty
+#endregion
+#region ToolTipDiameterProperty
     const double DEFAULT_TOOL_TIP_DIAMETER = 0.0;
     [DisplayName("Tool Tip Diameter"),
      Description("Tip diameter of engraving tool"),
@@ -412,8 +412,8 @@ namespace VEngraveForCamBam {
     }
     [XmlElement("ToolTipDiameter")]
     private CBValue<double> _toolTipDiameter;
-    #endregion
-    #region ToolVAngleProperty
+#endregion
+#region ToolVAngleProperty
     const double DEFAULT_TOOL_V_ANGLE = 90.0;
     [DisplayName("Tool V-Angle"),
      Description("V-angle of engraving tool"),
@@ -443,10 +443,10 @@ namespace VEngraveForCamBam {
     private CBValue<double> _toolVAngle;
     [XmlIgnore]
     private double _cotHalfVAngle;
-    #endregion
-    #endregion
+#endregion
+#endregion
 
-    #region PropertyCallbacks
+#region PropertyCallbacks
     public override bool EvaluateAutoCBValue(ICBValue toset, string name) {
       _log.Log(FINEST, "EvaluateAutoValue {0}", name);
       if (name.Equals("MaxDepth")) {
@@ -457,8 +457,8 @@ namespace VEngraveForCamBam {
         return base.EvaluateAutoCBValue(toset, name);
       }
     }
-    #endregion
-    #endregion
+#endregion
+#endregion
 
     public MOPVEngrave() {
       PathIncrement = CBValue<double>.Default;
@@ -478,7 +478,7 @@ namespace VEngraveForCamBam {
     }
 
     public MOPVEngrave(CADFile file, object[] objects)
-      : base(file, objects) { }
+    : base(file, objects) { }
 
     [XmlIgnore]
     public override string MOPTypeName {
@@ -492,55 +492,21 @@ namespace VEngraveForCamBam {
     protected override void _GenerateToolpathsWorker() {
       try {
         ClearToolpaths();
-
-        ShapeList shapes = new ShapeList();
-        shapes.CloneEntities = true;
-        shapes.ApplyTransformations = true;
-        shapes.AddEntities(_CADFile, PrimitiveIds);
-
+        ShapeList shapes = CreateShapeList();
         if (shapes.Count == 0) {
           return;
         }
 
-        ToolpathSequence tseq = new ToolpathSequence(this);
-        foreach (ShapeListItem item in shapes) {
-          if (item.Shape is Polyline || item.Shape is CamBam.CAD.Region) {
-            ComputeVEngraveToolpath(tseq, item);
-          } else {
-            _log.Log(ERROR, "I don't know what to do with a {0}",
-                    item.Shape.GetType());
-          }
-        }
-
-        // Replace the existing toolpath sequence...
+        ToolpathSequence tseq = CreateToolpathSequence(shapes);
         SetToolpathSequence(tseq);
+        DetermineCuttingOrder(Toolpaths2);
 
-        Toolpaths2.UseSplitPoint3D = true;
-        Toolpaths2.ToolDiameter = ToolDiameter.Cached;
-
-        // Determine the cutting order
-        if (OptimisationMode.Cached == OptimisationModes.Standard) {
-          Toolpaths2.BuildCutOrder(
-            CutOrderingOption.LevelFirst,
-            MillingDirectionOptions.Mixed,
-            GetDistanceThreshold(), StartPoint);
-        } else if (OptimisationMode.Cached
-                   == OptimisationModes.Experimental) {
-          Toolpaths2.BuildCutOrderEx_Inside(
-            CutOrderingOption.LevelFirst,
-            MillingDirectionOptions.Mixed,
-            SpindleDirection.Cached,
-            GetDistanceThreshold(), StartPoint,
-            InsideOutsideOptions.Inside);
-        } else {
-          Toolpaths2.BuildSimpleCutOrder();
-        }
         // Used to display the cut width area (optional)
         //if (ToolDiameter.Cached > 0) {
         //    Toolpaths2.CalculateCutWidths(ToolDiameter.Cached);
         //}
         //Toolpaths2.CalculateCutWidths(0.001 /* dummy value*/);
-        ComputeCutSurfaces();
+        Toolpaths2.CutWidths = ComputeCutSurfaces(Toolpaths2.Toolpaths);
         //_log.log(TRACE, "CutSurfaces:");
         //foreach (Surface s in Toolpaths2.CutWidths) {
         //  _log.log(TRACE,
@@ -573,11 +539,55 @@ namespace VEngraveForCamBam {
       }
     }
 
-    internal void ComputeCutSurfaces() {
+    internal ShapeList CreateShapeList() {
+      ShapeList shapes = new ShapeList();
+      shapes.CloneEntities = true;
+      shapes.ApplyTransformations = true;
+      shapes.AddEntities(_CADFile, PrimitiveIds);
+      return shapes;
+    }
+
+    internal ToolpathSequence CreateToolpathSequence(ShapeList shapes) {
+      ToolpathSequence tseq = new ToolpathSequence(this);
+      foreach (ShapeListItem item in shapes) {
+        if (item.Shape is Polyline || item.Shape is CamBam.CAD.Region) {
+          ComputeVEngraveToolpath(tseq, item);
+        } else {
+          _log.Log(ERROR, "I don't know what to do with a {0}",
+                   item.Shape.GetType());
+        }
+      }
+      return tseq;
+    }
+
+    internal void DetermineCuttingOrder(ToolpathSequence tseq) {
+      tseq.UseSplitPoint3D = true;
+      tseq.ToolDiameter = ToolDiameter.Cached;
+
+      // Determine the cutting order
+      if (OptimisationMode.Cached == OptimisationModes.Standard) {
+        tseq.BuildCutOrder(
+          CutOrderingOption.LevelFirst,
+          MillingDirectionOptions.Mixed,
+          GetDistanceThreshold(), StartPoint);
+      } else if (OptimisationMode.Cached
+                   == OptimisationModes.Experimental) {
+        tseq.BuildCutOrderEx_Inside(
+          CutOrderingOption.LevelFirst,
+          MillingDirectionOptions.Mixed,
+          SpindleDirection.Cached,
+          GetDistanceThreshold(), StartPoint,
+          InsideOutsideOptions.Inside);
+      } else {
+        tseq.BuildSimpleCutOrder();
+      }
+    }
+
+    internal List<Surface> ComputeCutSurfaces(List<ToolpathItem> tpil) {
       List<Surface> cutsurfaces = new List<Surface>();
       double tanHalfVAngle = Math.Tan(0.5*ToolVAngle.Cached*DEGREES);
       double toolTipRadius = 0.5*ToolTipDiameter.Cached;
-      foreach (ToolpathItem tpi in Toolpaths2.Toolpaths)  {
+      foreach (ToolpathItem tpi in tpil)  {
         Polyline toolpath = (Polyline) tpi.Toolpath.Clone();
         toolpath.CheckForClosed(PathIncrement.Cached);
         _log.Log(DEBUG, "Calculating cut surfaces for toolpath "
@@ -626,9 +636,9 @@ namespace VEngraveForCamBam {
         }
 
         Point3F startBottomInside = toolTipRadius < DBL_EPSILON
-            ? current : Geometry.Add(current,
-                                     Geometry.Multiply(toolTipRadius,
-                                                       currmiter.To3D()));
+          ? current : Geometry.Add(current,
+                                   Geometry.Multiply(toolTipRadius,
+                                                     currmiter.To3D()));
         Point3F startTopInside = Geometry.Add(
           current.To2D(),
           Geometry.Multiply(startCutRadius,
@@ -658,14 +668,14 @@ namespace VEngraveForCamBam {
           // Initial "pie wedge".
           if (!startTopOutsideStart.IsUndefined
               && !startBottomOutsideStart.IsUndefined
-             // Check for an actual bend that we need to join together
+              // Check for an actual bend that we need to join together
               && Point3F.Distance(startTopOutsideStart,
                                   startTopOutsideEnd) >= DBL_EPSILON)  {
             ComputeCutPartialCone(current.To2D(), startBottomInside,
-                startTopOutsideStart, startBottomOutsideStart,
-                startTopOutsideEnd, startBottomOutsideEnd,
-                Vector2F.Determinant(currstep, currmiter),
-                bob);
+                                  startTopOutsideStart, startBottomOutsideStart,
+                                  startTopOutsideEnd, startBottomOutsideEnd,
+                                  Vector2F.Determinant(currstep, currmiter),
+                                  bob);
           }
 
           // Compute main body of this segment
@@ -684,10 +694,11 @@ namespace VEngraveForCamBam {
             // segments.
             beyond = toolpath.Points[beyondi].Point;
             outvector = new Vector2F(next.To2D(), beyond.To2D());
+            // TODO: Handle this better
             if (outvector.Length < DBL_EPSILON) {
-              _log.Log(WARNING, "zero-length segment in toolpath at {0}, aborting",
-                       next);
-              return;
+              _log.Log(WARNING, "zero-length segment in toolpath at {0}, "
+                       + "aborting", next);
+              return new List<Surface>();
             }
             nextmiter = Geometry.Bisect(
               Geometry.Multiply(-1, currstep), outvector);
@@ -716,7 +727,7 @@ namespace VEngraveForCamBam {
           Point3F endBottomOutsideStart = Geometry.Add(
             next, Geometry.Multiply(toolTipRadius, outsideNormal.To3D()));
           Point3F endTopOutsideStart = Geometry.Add(
-            current.To2D(), Geometry.Multiply(startCutRadius, outsideNormal))
+            next.To2D(), Geometry.Multiply(endCutRadius, outsideNormal))
             .To3D(StockSurface.Cached);
 
           // Note: Let the surface builder suppress degenerate facets
@@ -727,11 +738,11 @@ namespace VEngraveForCamBam {
                           endTopInside);
           } else {                        // flat-bottomed v-groove
             bob.AddFacets(startTopOutsideEnd, startBottomOutsideEnd,
-                        endBottomOutsideStart, endTopOutsideStart);
+                          endBottomOutsideStart, endTopOutsideStart);
             bob.AddFacets(startBottomInside, startBottomOutsideEnd,
-                        endBottomOutsideStart, endBottomInside);
+                          endBottomOutsideStart, endBottomInside);
             bob.AddFacets(startTopInside, startBottomInside,
-                        endBottomInside, endTopInside);
+                          endBottomInside, endTopInside);
           }
 
           // Compute ending pie wedge
@@ -742,12 +753,12 @@ namespace VEngraveForCamBam {
               = Point3F.Undefined;
           } else {
             endBottomOutsideEnd = Geometry.Add(
-                next, Geometry.Multiply(-toolTipRadius,
-                                        nextmiter.To3D()));
+              next, Geometry.Multiply(-toolTipRadius,
+                                      nextmiter.To3D()));
             endTopOutsideEnd = Geometry.Add(
-                next.To2D(), Geometry.Multiply(-endCutRadius,
-                                                nextmiter))
-                .To3D(StockSurface.Cached);
+              next.To2D(), Geometry.Multiply(-endCutRadius,
+                                             nextmiter))
+              .To3D(StockSurface.Cached);
             // Check for an actual bend that we need to join together
             if (Point3F.Distance(endTopOutsideStart,
                                  endTopOutsideEnd) > DBL_EPSILON) {
@@ -774,19 +785,19 @@ namespace VEngraveForCamBam {
         }
         if (!toolpath.Closed) {
           ComputeCutEndcap(current,
-                            Geometry.Multiply(-1, currstep),
-                            bob);
+                           Geometry.Multiply(-1, currstep),
+                           bob);
         }
         cutsurfaces.Add(bob.Build());
       }
-      Toolpaths2.CutWidths = cutsurfaces;
+      return cutsurfaces;
     }
 
     internal void ComputeCutPartialCone(Point2F center, Point3F facetJoin,
-                                         Point3F startTop, Point3F startBottom,
-                                         Point3F endTop, Point3F endBottom,
-                                         double bendCrossProduct,
-                                         SurfaceBuilder bob) {
+                                        Point3F startTop, Point3F startBottom,
+                                        Point3F endTop, Point3F endBottom,
+                                        double bendCrossProduct,
+                                        SurfaceBuilder bob) {
       Point3F prevTop = startTop;
       Point3F prevBottom = startBottom;
       var startRadius = new Vector2F(center, startTop.To2D());
@@ -810,18 +821,19 @@ namespace VEngraveForCamBam {
       }
       // divide interval into increments of no more than 5 degrees
       double dTheta = (endTheta - startTheta)
-            / Math.Max(1, Math.Ceiling((endTheta - startTheta)/5*DEGREES));
+        / Math.Max(1, Math.Ceiling((endTheta - startTheta)/5*DEGREES));
       _log.Log(FINE, "  pivoting {0} degrees at {1}",
                (endTheta - startTheta)/DEGREES, center);
       for (double theta = startTheta + dTheta;
-            dirTheta*theta < dirTheta*endTheta; theta += dTheta) {
+           dirTheta*theta < dirTheta*endTheta; theta += dTheta) {
         Vector2F currRadius = new Vector2F(Math.Cos(theta), Math.Sin(theta));
         Point3F currTop = Geometry.Add(center,
-            Geometry.Multiply(cutRadius, currRadius))
-                .To3D(StockSurface.Cached);
+                                       Geometry.Multiply(cutRadius, currRadius))
+          .To3D(StockSurface.Cached);
         Point3F currBottom = Geometry.Add(center,
-            Geometry.Multiply(toolTipRadius, currRadius))
-                .To3D(startBottom.Z);
+                                          Geometry.Multiply(toolTipRadius,
+                                                            currRadius))
+          .To3D(startBottom.Z);
         if (toolTipRadius < DBL_EPSILON) {
           bob.AddFacet(prevTop, currTop, facetJoin);
         } else {
@@ -839,7 +851,7 @@ namespace VEngraveForCamBam {
     }
 
     internal void ComputeCutEndcap(
-        Point3F endpoint, Vector2F openDirection, SurfaceBuilder bob) {
+      Point3F endpoint, Vector2F openDirection, SurfaceBuilder bob) {
       double bottomRadius = ToolTipDiameter.Cached/2;
       double topRadius = bottomRadius
         + (StockSurface.Cached - endpoint.Z)*Math.Tan(
@@ -874,9 +886,9 @@ namespace VEngraveForCamBam {
     }
 
     // Override to emit macros, etc
-     public override bool PreProcess(CamBam.CAM.MachineOpToGCode gcg) {
-         return base.PreProcess(gcg);
-     }
+    public override bool PreProcess(CamBam.CAM.MachineOpToGCode gcg) {
+      return base.PreProcess(gcg);
+    }
 
     public override void PostProcess(MachineOpToGCode gcg) {
       // lets the stock model know where the current top of the
@@ -906,7 +918,7 @@ namespace VEngraveForCamBam {
     }
 
     internal void ComputeVEngraveToolpath(ToolpathSequence tseq,
-                                           ShapeListItem item) {
+                                          ShapeListItem item) {
       _cotHalfVAngle = 1.0/Math.Tan(0.5*ToolVAngle.Cached*DEGREES);
       int depthIndex = 0;
       int offsetIndex = 0;
@@ -914,59 +926,59 @@ namespace VEngraveForCamBam {
         List<Polyline> outlines = new List<Polyline>(1);
         outlines.Add((Polyline) item.Shape);
         FollowOutline(tseq, (Polyline) item.Shape, outlines,
-                       item.EntityID, parentID: -1,
-                       offsetIndex: offsetIndex++, depthIndex: depthIndex,
-                       traceInside: true);
+                      item.EntityID, parentID: -1,
+                      offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                      traceInside: true);
       } else if (item.Shape is Region) {
         ComputeRegionToolpaths(tseq, (Region) item.Shape, item.EntityID,
-                                ref depthIndex, ref offsetIndex);
+                               ref depthIndex, ref offsetIndex);
       } else if (item.Shape is MText) {
         foreach (Region region in ((MText) item.Shape).ToRegions()) {
           // somehow parent id ought to be involved here
           ComputeRegionToolpaths(tseq, region, item.EntityID,
-                                  ref depthIndex, ref offsetIndex);
+                                 ref depthIndex, ref offsetIndex);
         }
       } else {
         _log.Log(ERROR, "Don't know what to do with {0} entity {1}",
-                item.Shape.GetType(), item.EntityID);
+                 item.Shape.GetType(), item.EntityID);
       }
     }
 
     internal void ComputeRegionToolpaths(ToolpathSequence tseq,
-                                          Region region,
-                                          EntityIdentifier entityID,
-                                          ref int depthIndex,
-                                          ref int offsetIndex) {
+                                         Region region,
+                                         EntityIdentifier entityID,
+                                         ref int depthIndex,
+                                         ref int offsetIndex) {
       List<Polyline> outlines = new List<Polyline>(region.HoleCurves);
       outlines.Add(region.OuterCurve);
       FollowOutline(tseq, region.OuterCurve, outlines, entityID, parentID: -1,
-                     offsetIndex: offsetIndex++, depthIndex: depthIndex,
-                     traceInside: true);
+                    offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                    traceInside: true);
       int holenum = 0;
       foreach (Polyline phole in region.HoleCurves) {
         EntityIdentifier holeid = new EntityIdentifier(entityID.EntityID,
                                                        entityID.SubItem1,
                                                        holenum++);
         FollowOutline(tseq, phole, outlines,
-                       offsetIndex: offsetIndex++, depthIndex: depthIndex,
-                       outlineID: holeid, parentID: entityID.EntityID,
-                       traceInside: false);
+                      offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                      outlineID: holeid, parentID: entityID.EntityID,
+                      traceInside: false);
       }
     }
 
     internal void FollowOutline(
-        ToolpathSequence tseq, Polyline outline, List<Polyline> outlines,
-        EntityIdentifier outlineID, int parentID, int offsetIndex, 
-        int depthIndex, bool traceInside) {
+      ToolpathSequence tseq, Polyline outline, List<Polyline> outlines,
+      EntityIdentifier outlineID, int parentID, int offsetIndex,
+      int depthIndex, bool traceInside) {
       double dl = PathIncrement.Cached;
       _log.Log(DEBUG, "Following polyline {0}, direction: {1}",
                outline.ID, outline.Direction);
       if (!outline.Closed) {
         _log.Log(ERROR, "I don't know what to do with open polyline {0}",
-                outlineID);
+                 outlineID);
       } else if (outline.Direction == RotationDirection.Unknown) {
         _log.Log(ERROR, "I don't know what to do with unknown rotation"
-                + " polyline {0}", outlineID);
+                 + " polyline {0}", outlineID);
       } else {
         bool leftIsInside = (outline.Direction
                              == RotationDirection.CCW) == traceInside;
@@ -979,7 +991,8 @@ namespace VEngraveForCamBam {
                                    thresholdAngle, leftIsInside,
                                    out nextNormal);
         Point2F start = point[0].Point.To2D();
-        Point2F adjustedStart = AdjustCornerPoint(0, startCornerType, outline, outlines);
+        Point2F adjustedStart = AdjustCornerPoint(0, startCornerType,
+                                                  outline, outlines);
         double lastRadius = -1;
         for (int i = 0; i < outline.Points.Count; ++i) {
           _log.Log(TRACE, "Processing segment[{0}], starting point: {1}",
@@ -992,7 +1005,8 @@ namespace VEngraveForCamBam {
             = Geometry.GetCornerType(outline, nexti,
                                      thresholdAngle, leftIsInside,
                                      out nextNormal);
-          Point2F adjustedEnd = AdjustCornerPoint(nexti, endCornerType, outline, outlines);
+          Point2F adjustedEnd = AdjustCornerPoint(nexti, endCornerType,
+                                                  outline, outlines);
           Vector2F dse = new Vector2F(start, end);
           double len = dse.Length;
           if (len < DBL_EPSILON) {
@@ -1014,9 +1028,9 @@ namespace VEngraveForCamBam {
             Point2F current = start;
             while (stepsLeft-- >= 0) { // include both first and last points
               lastRadius = AnalyzePoint(outline, i, current, curNormal,
-                                         Double.MaxValue, outlines,
-                                         startCornerType, endCornerType,
-                                         toolpath, leftIsInside);
+                                        Double.MaxValue, outlines,
+                                        startCornerType, endCornerType,
+                                        toolpath, leftIsInside);
               // Be certain to hit the end exactly.  Overshoot causes issues.
               current = stepsLeft == 0 ? end : Geometry.Add(current, dp);
             }
@@ -1028,8 +1042,8 @@ namespace VEngraveForCamBam {
             double startTheta = Math.Atan2(start.Y - center.Y,
                                            start.X - center.X);
             double endTheta = Geometry.NormalizeAngularInterval(
-                direction, startTheta, Math.Atan2(end.Y - center.Y,
-                                                  end.X - center.X));
+              direction, startTheta, Math.Atan2(end.Y - center.Y,
+                                                end.X - center.X));
             int stepsLeft = (int) Math.Max(
               Math.Abs((endTheta - startTheta)
                        /(dl/arcRadius)), 1);
@@ -1046,16 +1060,16 @@ namespace VEngraveForCamBam {
                 maxRadius = arcRadius;
               }
               lastRadius = AnalyzePoint(outline, i, current, curNormal,
-                                         maxRadius, outlines,
-                                         startCornerType, endCornerType,
-                                         toolpath, leftIsInside);
+                                        maxRadius, outlines,
+                                        startCornerType, endCornerType,
+                                        toolpath, leftIsInside);
               theta += dtheta;
               // Be certain to hit the end exactly.  Overshoot causes issues.
               if (stepsLeft > 0) {
                 curNormal = new Vector2F(Math.Cos(theta),
                                          Math.Sin(theta));
                 current = Geometry.Add(
-                    center, Geometry.Multiply(curNormal, arcRadius));
+                  center, Geometry.Multiply(curNormal, arcRadius));
               } else if (stepsLeft == 0) {
                 curNormal = new Vector2F(center, end).Unit();
                 current = end;
@@ -1073,17 +1087,17 @@ namespace VEngraveForCamBam {
                                        ? 5*DEGREES
                                        : dl/lastRadius);
             double endTheta = Geometry.NormalizeAngularInterval(
-                direction, startTheta, nextNormal.Angle);
+              direction, startTheta, nextNormal.Angle);
             _log.Log(TRACE, "Swiveling at {0} from {1} degrees to {2}",
                      end, startTheta/DEGREES, endTheta/DEGREES);
             for (double theta = startTheta + dTheta;
                  direction*theta < direction*(endTheta - dTheta/2);
                  theta += dTheta) {
               AnalyzePoint(outline, i, end,
-                            new Vector2F(Math.Cos(theta), Math.Sin(theta)),
-                            Double.MaxValue, outlines,
-                            startCornerType, endCornerType,
-                            toolpath, leftIsInside);
+                           new Vector2F(Math.Cos(theta), Math.Sin(theta)),
+                           Double.MaxValue, outlines,
+                           startCornerType, endCornerType,
+                           toolpath, leftIsInside);
             }
           }
           startCornerType = endCornerType;
@@ -1105,7 +1119,8 @@ namespace VEngraveForCamBam {
     }
 
     internal Point2F AdjustCornerPoint(int cp, Geometry.CornerType cornerType,
-                                       Polyline outline, List<Polyline> outlines) {
+                                       Polyline outline,
+                                       List<Polyline> outlines) {
       if (cornerType != Geometry.CornerType.SmoothInside) {
         return outline.Points[cp].Point.To2D();
       }
@@ -1128,10 +1143,10 @@ namespace VEngraveForCamBam {
         for (int i = 0; i < outline.Points.Count; ++i) {
           if (outline == currentOutline
               && (startCornerType != Geometry.CornerType.SharpInside
-                      && i == currentOutline.PrevSegment(currentItem)
+                  && i == currentOutline.PrevSegment(currentItem)
                   || i == currentItem
                   || endCornerType != Geometry.CornerType.SharpInside
-                      && i == currentOutline.NextSegment(currentItem))) {
+                  && i == currentOutline.NextSegment(currentItem))) {
             continue;
           }
 
@@ -1143,10 +1158,10 @@ namespace VEngraveForCamBam {
           // compute radius to straight line
           if (Math.Abs(bulge) < DBL_EPSILON) {
             tangentRadius = Geometry.RadiusToLineSegment(
-                current, normal, start, end);
+              current, normal, start, end);
           } else {  // compute radius to arc
             tangentRadius = Geometry.RadiusToArc(
-                current, normal, start, end, bulge);
+              current, normal, start, end, bulge);
           }
           if (tangentRadius < radius) {
             radius = tangentRadius;
@@ -1156,9 +1171,9 @@ namespace VEngraveForCamBam {
         }
       }
       Point3F toolpathPoint = new Point3F(
-          current.X + radius*normal.X,
-          current.Y + radius*normal.Y,
-          -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle);
+        current.X + radius*normal.X,
+        current.Y + radius*normal.Y,
+        -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle);
       //// Verify we didn't overlap adjacent segments when we skipped them.
       //if (startCornerType != Geometry.CornerType.SharpInside
       //    || endCornerType != Geometry.CornerType.SharpInside) {
@@ -1197,15 +1212,15 @@ namespace VEngraveForCamBam {
       } else {
         if (toolpath.Points.Count >= 2
             && Geometry.PointBetween(
-                toolpath.Points[toolpath.Points.Count - 2].Point,
-                toolpath.Points[toolpath.Points.Count - 1].Point,
-                toolpathPoint,
-                1e-3*PathIncrement.Cached)) {
+              toolpath.Points[toolpath.Points.Count - 2].Point,
+              toolpath.Points[toolpath.Points.Count - 1].Point,
+              toolpathPoint,
+              1e-3*PathIncrement.Cached)) {
           // Consolidate co-linear points
           _log.Log(TRACE, "  Removing point at {0} between {1} and {2}",
-                    toolpath.Points[toolpath.Points.Count - 1].Point,
-                    toolpath.Points[toolpath.Points.Count - 2].Point,
-                    toolpathPoint);
+                   toolpath.Points[toolpath.Points.Count - 1].Point,
+                   toolpath.Points[toolpath.Points.Count - 2].Point,
+                   toolpathPoint);
           toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
         }
         toolpath.Add(toolpathPoint);

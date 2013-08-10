@@ -52,8 +52,8 @@ namespace VEngrave_UnitTests {
     }
 
     private static void TestCornerType(Polyline outline, int corner,
-                                        Geometry.CornerType expected,
-                                        string msg) {
+                                       Geometry.CornerType expected,
+                                       string msg) {
       Vector2F nextNormal;
       var leftIsInside = outline.Direction == RotationDirection.CCW;
       Assert.AreEqual(expected,
@@ -64,7 +64,7 @@ namespace VEngrave_UnitTests {
     }
 
     private void TestCorner(Polyline outline, int corner,
-                             double expected, string msg) {
+                            double expected, string msg) {
       bool leftIsInside = outline.Direction == RotationDirection.CCW;
       var outlines = new List<Polyline>(new Polyline[] { outline });
       TestCorner(outline, corner, outlines, leftIsInside, expected, msg);
@@ -148,13 +148,13 @@ namespace VEngrave_UnitTests {
     public void TestMBottomCornerTypes() {
       Polyline mbottom = MBottom();
       TestCornerType(mbottom, MBOTTOM_LEFT_SERIF_TOP,
-                      Geometry.CornerType.SharpInside, "Left serif top");
+                     Geometry.CornerType.SharpInside, "Left serif top");
       TestCornerType(mbottom, MBOTTOM_LEFT_SERIF_BOTTOM,
-                      Geometry.CornerType.SharpInside, "Left serif bottom");
+                     Geometry.CornerType.SharpInside, "Left serif bottom");
       TestCornerType(mbottom, MBOTTOM_RIGHT_SERIF_TOP,
-                      Geometry.CornerType.SharpInside, "Right serif bottom");
+                     Geometry.CornerType.SharpInside, "Right serif bottom");
       TestCornerType(mbottom, MBOTTOM_RIGHT_SERIF_BOTTOM,
-                      Geometry.CornerType.SharpInside, "Right serif top");
+                     Geometry.CornerType.SharpInside, "Right serif top");
     }
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestLTopOutlineCorners() {
@@ -163,26 +163,28 @@ namespace VEngrave_UnitTests {
       var outline = LTop();
       var outlines = new List<Polyline>(new Polyline[] {outline});
       mop.FollowOutline(tseq, outline, outlines,
-                         outlineID: new EntityIdentifier(1), parentID: -1,
-                         offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        outlineID: new EntityIdentifier(1), parentID: -1,
+                        offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
       Assert.IsNotNull(tseq.Toolpaths[0]);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
-      Point3F npc1 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
-                                      outline.Points[LTOP_LEFT_SERIF_BOTTOM].Point);
-      Assert.AreEqual(0.0, Point3F.Distance(
-          npc1, outline.Points[LTOP_LEFT_SERIF_BOTTOM].Point), 1e-5,
-          "L top left serif bottom");
+      Point3F npc1 = GetNearestPoint(
+        tseq.Toolpaths[0].Toolpath,
+        outline.Points[LTOP_LEFT_SERIF_BOTTOM].Point);
+      Assert.AreEqual(0.0,
+                      Point3F.Distance(
+                        npc1, outline.Points[LTOP_LEFT_SERIF_BOTTOM].Point),
+                      1e-5, "L top left serif bottom");
       Point3F npc2 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
-                                      outline.Points[LTOP_LEFT_SERIF_TOP].Point);
+                                     outline.Points[LTOP_LEFT_SERIF_TOP].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
-          npc2, outline.Points[LTOP_LEFT_SERIF_TOP].Point), 1e-5,
-          "L top left serif top");
+                        npc2, outline.Points[LTOP_LEFT_SERIF_TOP].Point), 1e-5,
+                      "L top left serif top");
       Point3F npc3 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
-                                      outline.Points[LTOP_TOP_RIGHT].Point);
+                                     outline.Points[LTOP_TOP_RIGHT].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
-          npc3, outline.Points[LTOP_TOP_RIGHT].Point), 1e-5,
-          "L top right corner");
+                        npc3, outline.Points[LTOP_TOP_RIGHT].Point), 1e-5,
+                      "L top right corner");
     }
     [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
     public void TestCommaOutlineCorners() {
@@ -191,21 +193,21 @@ namespace VEngrave_UnitTests {
       var outline = Comma();
       var outlines = new List<Polyline>(new Polyline[] { outline });
       mop.FollowOutline(tseq, outline, outlines,
-                         outlineID: new EntityIdentifier(1), parentID: -1,
-                         offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        outlineID: new EntityIdentifier(1), parentID: -1,
+                        offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
       Assert.IsNotNull(tseq.Toolpaths[0]);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
       Point3F npc1 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
-                                      outline.Points[COMMA_LEFT_CORNER].Point);
+                                     outline.Points[COMMA_LEFT_CORNER].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
-          npc1, outline.Points[COMMA_LEFT_CORNER].Point), 1e-5,
-          "Comma left corner");
+                        npc1, outline.Points[COMMA_LEFT_CORNER].Point), 1e-5,
+                      "Comma left corner");
       Point3F npc2 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
-                                      outline.Points[COMMA_RIGHT_CORNER].Point);
+                                     outline.Points[COMMA_RIGHT_CORNER].Point);
       Assert.AreEqual(0.0, Point3F.Distance(
-          npc2, outline.Points[COMMA_RIGHT_CORNER].Point), 1e-5,
-          "Comma right corner");
+                        npc2, outline.Points[COMMA_RIGHT_CORNER].Point), 1e-5,
+                      "Comma right corner");
     }
     [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
     public void TestTestVEngrave3DotCBBase1() {
@@ -216,8 +218,8 @@ namespace VEngrave_UnitTests {
       var errorBox = TestVEngrave3DotCBErrorBoxBase1();
       var boundary = TestVEngrave3DotCBToolpathOuterBoundaryBase1();
       mop.FollowOutline(tseq, outline, outlines,
-                         outlineID: new EntityIdentifier(1), parentID: -1,
-                         offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        outlineID: new EntityIdentifier(1), parentID: -1,
+                        offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
       Assert.IsNotNull(tseq.Toolpaths[0]);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
@@ -228,6 +230,7 @@ namespace VEngrave_UnitTests {
                       "Boundary {0}", point.Point.To2D());
       }
     }
+
     [TestMethod, TestCategory("Medium"), TestCategory("Repro")]
     public void TestTestVEngrave3DotCBBang() {
       MOPVEngrave mop = CreateMOP();
@@ -238,8 +241,8 @@ namespace VEngrave_UnitTests {
       var errorBox2 = TestVEngrave3DotCBErrorBox2Bang();
       var boundary = TestVEngrave3DotCBToolpathOuterBoundaryBang();
       mop.FollowOutline(tseq, outline, outlines,
-                         outlineID: new EntityIdentifier(1), parentID: -1,
-                         offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        outlineID: new EntityIdentifier(1), parentID: -1,
+                        offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
       Assert.IsNotNull(tseq.Toolpaths[0]);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
@@ -261,8 +264,8 @@ namespace VEngrave_UnitTests {
       var errorBox = TestVEngrave4DotCBErrorBox();
       var boundary = TestVEngrave4DotCBToolpathOuterBoundary();
       mop.FollowOutline(tseq, outline, outlines,
-                         outlineID: new EntityIdentifier(1), parentID: -1,
-                         offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        outlineID: new EntityIdentifier(1), parentID: -1,
+                        offsetIndex: 0, depthIndex: 0, traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
       Assert.IsNotNull(tseq.Toolpaths[0]);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
@@ -608,44 +611,68 @@ namespace VEngrave_UnitTests {
       Polyline boundary = new Polyline();
       boundary.Add(1.10435891967534, 1.10518909436695, 0);
       boundary.Add(1.10611928905752, 1.10740586199389, 0, 0.99999999999999989);
-      boundary.Add(1.10298591776952, 1.10989222165645, 0, -0.0019139909220198094);
+      boundary.Add(1.10298591776952, 1.10989222165645, 0,
+                   -0.0019139909220198094);
       boundary.Add(1.09436232244575, 1.09909904737785, 0);
-      boundary.Add(1.0910035875836, 1.09494144381054, 0, -0.0022243616177246325);
+      boundary.Add(1.0910035875836, 1.09494144381054, 0,
+                   -0.0022243616177246325);
       boundary.Add(1.08278981545249, 1.08488846356531, 0, 0.011343561062565784);
-      boundary.Add(1.06563761276892, 1.09687761601782, 0, -0.041421217622887731);
+      boundary.Add(1.06563761276892, 1.09687761601782, 0,
+                   -0.041421217622887731);
       boundary.Add(1.06293421930482, 1.09842645034544, 0, 0.26808905177332448);
       boundary.Add(1.05503673080965, 1.09791685517165, 0);
       boundary.Add(1.0427848398383, 1.08992411429186, 0, 0.99999999999992306);
       boundary.Add(1.04497036698875, 1.08657396935848, 0);
       boundary.Add(1.05722225795579, 1.09456671023547, 0, -0.27045668524959565);
-      boundary.Add(1.06104746495647, 1.09488460187183, 0, -0.052016397011189076);
+      boundary.Add(1.06104746495647, 1.09488460187183, 0,
+                   -0.052016397011189076);
       boundary.Add(1.06442175487811, 1.09280509761779, 0);
-      boundary.Add(1.06433408010304, 1.09293851257174, 0, -0.0024539768851573572);
-      boundary.Add(1.06803141559474, 1.09043777801538, 0, -0.0024697758083316846);
-      boundary.Add(1.07175271933142, 1.08786704345151, 0, -0.0024898039928623974);
-      boundary.Add(1.07550281903011, 1.08522106637612, 0, -0.0025105037501734736);
+      boundary.Add(1.06433408010304, 1.09293851257174, 0,
+                   -0.0024539768851573572);
+      boundary.Add(1.06803141559474, 1.09043777801538, 0,
+                   -0.0024697758083316846);
+      boundary.Add(1.07175271933142, 1.08786704345151, 0,
+                   -0.0024898039928623974);
+      boundary.Add(1.07550281903011, 1.08522106637612, 0,
+                   -0.0025105037501734736);
       boundary.Add(1.07928106495225, 1.08249821144857, 0);
-      boundary.Add(1.08117679758615, 1.08110934813917, 0, -0.057068187916927055);
+      boundary.Add(1.08117679758615, 1.08110934813917, 0,
+                   -0.057068187916927055);
       boundary.Add(1.08127797334171, 1.07993790867347, 0);
-      boundary.Add(1.08141048490235, 1.0777708817905, 0, -0.0032517111286867561);
-      boundary.Add(1.08157509445258, 1.07449845584283, 0, -0.003240598704167724);
-      boundary.Add(1.08169680187432, 1.07123484092584, 0, -0.0032380372102421445);
-      boundary.Add(1.08177616231923, 1.06797198512418, 0, -0.0032354402985227669);
-      boundary.Add(1.08181324916151, 1.06471047190162, 0, -0.0032328086960549916);
-      boundary.Add(1.08180814460878, 1.0614508821585, 0, -0.0032301431331855277);
-      boundary.Add(1.08176093962006, 1.05819379408071, 0, -0.0032274443469039221);
-      boundary.Add(1.08167173382099, 1.05493978299128, 0, -0.0032247130747860963);
-      boundary.Add(1.08154063541614, 1.05168942120462, 0, -0.003221950060515216);
-      boundary.Add(1.08136776109863, 1.04844327788335, 0, -0.0032191560486948172);
-      boundary.Add(1.08115323595712, 1.04520191889795, 0, -0.0032163317877792518);
-      boundary.Add(1.08089719338028, 1.04196590668918, 0, -0.003213478029176512);
+      boundary.Add(1.08141048490235, 1.0777708817905, 0,
+                   -0.0032517111286867561);
+      boundary.Add(1.08157509445258, 1.07449845584283, 0,
+                   -0.003240598704167724);
+      boundary.Add(1.08169680187432, 1.07123484092584, 0,
+                   -0.0032380372102421445);
+      boundary.Add(1.08177616231923, 1.06797198512418, 0,
+                   -0.0032354402985227669);
+      boundary.Add(1.08181324916151, 1.06471047190162, 0,
+                   -0.0032328086960549916);
+      boundary.Add(1.08180814460878, 1.0614508821585, 0,
+                   -0.0032301431331855277);
+      boundary.Add(1.08176093962006, 1.05819379408071, 0,
+                   -0.0032274443469039221);
+      boundary.Add(1.08167173382099, 1.05493978299128, 0,
+                   -0.0032247130747860963);
+      boundary.Add(1.08154063541614, 1.05168942120462, 0,
+                   -0.003221950060515216);
+      boundary.Add(1.08136776109863, 1.04844327788335, 0,
+                   -0.0032191560486948172);
+      boundary.Add(1.08115323595712, 1.04520191889795, 0,
+                   -0.0032163317877792518);
+      boundary.Add(1.08089719338028, 1.04196590668918, 0,
+                   -0.003213478029176512);
       boundary.Add(1.08059977495868, 1.03873580013326, 0, -0.00321059552468785);
       boundary.Add(1.08026113038449, 1.03551215441003, 0, -0.00320768502791398);
       boundary.Add(1.07988141734871, 1.032295520874, 0, -0.0032047472957535531);
-      boundary.Add(1.07946080143635, 1.02908644692829, 0, -0.0032017830829601185);
-      boundary.Add(1.07899945601943, 1.02588547590164, 0, -0.041023922373922488);
+      boundary.Add(1.07946080143635, 1.02908644692829, 0,
+                   -0.0032017830829601185);
+      boundary.Add(1.07899945601943, 1.02588547590164, 0,
+                   -0.041023922373922488);
       boundary.Add(1.07779314058493, 1.02022299751542, 0);
-      boundary.Add(1.07748664227487, 1.01948969018086, 0, -0.083581288287817079);
+      boundary.Add(1.07748664227487, 1.01948969018086, 0,
+                   -0.083581288287817079);
       boundary.Add(1.06531812078096, 1.01756315741524, 0);
       boundary.Add(1.06334448125162, 1.01775347633303, 0);
       boundary.Add(1.03107610244716, 1.02223804739339, 0, 0.99999999999994482);
@@ -653,18 +680,23 @@ namespace VEngrave_UnitTests {
       boundary.Add(1.0629503353682, 1.01376980903794, 0, 0.086238510937727345);
       boundary.Add(1.07799387918755, 1.01535226932107, 0);
       boundary.Add(1.07785123190105, 1.01539508795018, 0, -0.89412462478886368);
-      boundary.Add(1.07814936259581, 1.01527389593695, 0, -0.010760944791897797);
+      boundary.Add(1.07814936259581, 1.01527389593695, 0,
+                   -0.010760944791897797);
       boundary.Add(1.08926976142181, 0.988958485862497, 0, 1.0000000000000464);
-      boundary.Add(1.09298545284987, 0.99043957911111, 0, 0.0014450068050039951);
+      boundary.Add(1.09298545284987, 0.99043957911111, 0,
+                   0.0014450068050039951);
       boundary.Add(1.09150521440214, 0.994132510577131, 0);
-      boundary.Add(1.09050824048704, 0.996585355621557, 0, 0.0093522119401559713);
+      boundary.Add(1.09050824048704, 0.996585355621557, 0,
+                   0.0093522119401559713);
       boundary.Add(1.08131792629092, 1.01797877582013, 0, 0.030202834884394448);
       boundary.Add(1.08339711163067, 1.02835025903998, 0, 0.052787918509483243);
       boundary.Add(1.0851820039019, 1.08148134930864, 0, -0.018534744060450688);
       boundary.Add(1.08616905018124, 1.08269950451524, 0);
-      boundary.Add(1.08931517038803, 1.08653281456924, 0, 0.0009674884514208668);
+      boundary.Add(1.08931517038803, 1.08653281456924, 0,
+                   0.0009674884514208668);
       boundary.Add(1.09334012340828, 1.09147225046795, 0);
-      boundary.Add(1.09664187539159, 1.09555308003942, 0, 0.0016806836413417929);
+      boundary.Add(1.09664187539159, 1.09555308003942, 0,
+                   0.0016806836413417929);
       boundary.ID = 3;
       boundary.Closed = true;
       return boundary;

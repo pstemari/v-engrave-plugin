@@ -1,4 +1,4 @@
-﻿/* -*- mode: csharp; c-basic-offset: 2 -*- 
+﻿/* -*- mode: csharp; c-basic-offset: 2 -*-
  * Copyright 2013 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ namespace VEngrave_UnitTests {
         for (double y = -7.9; y < 8; y += 1.56) {
           for (double z = -1.6; z < 2.7; z += .714) {
             Assert.AreEqual(new Point2F(x, y), new Point3F(x, y, z).To2D(),
-              "x = {0}, y = {1}, z = {2}", x, y, z);
+                            "x = {0}, y = {1}, z = {2}", x, y, z);
           }
         }
       }
@@ -47,9 +47,9 @@ namespace VEngrave_UnitTests {
         for (double y = -7.59; y < 8.13; y += 1.7) {
           for (double z = -1.34; z < 2.78; z += .691) {
             Assert.AreEqual(new Point3F(x, y, 0), new Point2F(x, y).To3D(),
-                "x = {0}, y = {1}, z = {2}", x, y, z);
+                            "x = {0}, y = {1}, z = {2}", x, y, z);
             Assert.AreEqual(new Point3F(x, y, z), new Point2F(x, y).To3D(z),
-                "x = {0}, y = {1}, z = {2}", x, y, z);
+                            "x = {0}, y = {1}, z = {2}", x, y, z);
           }
         }
       }
@@ -58,9 +58,10 @@ namespace VEngrave_UnitTests {
     [TestMethod, TestCategory("Small")]
     public void TestProjectTo() {
       GA.AssertAreApproxEqual(new Point3F(0.5, 0.5, 0.5),
-          new Point2F(0.5, 0.5).ProjectTo(
-              new Triangle3F(new Point3F(0, 0, 0), new Point3F(5, 2, 2),
-                             new Point3F(0, 1, 1))));
+                              new Point2F(0.5, 0.5).ProjectTo(
+                                new Triangle3F(new Point3F(0, 0, 0),
+                                               new Point3F(5, 2, 2),
+                                               new Point3F(0, 1, 1))));
     }
 
     [TestMethod, TestCategory("Small")]
@@ -69,7 +70,7 @@ namespace VEngrave_UnitTests {
         for (double y = -7.9; y < 8; y += 1.56) {
           for (double z = -1.6; z < 2.7; z += .714) {
             Assert.AreEqual(new Vector2F(x, y), new Vector3F(x, y, z).To2D(),
-              "x = {0}, y = {1}, z = {2}", x, y, z);
+                            "x = {0}, y = {1}, z = {2}", x, y, z);
           }
         }
       }
@@ -94,34 +95,43 @@ namespace VEngrave_UnitTests {
       var a = new Point2F(3.0, 4.67);
       var b = new Point2F(8.0, 75.6);
       Assert.AreEqual(new Line3F(a.To3D(), b.To3D()), new Line2F(a, b).To3D());
-      Assert.AreEqual(new Line3F(a.To3D(1.3), b.To3D(1.3)), new Line2F(a, b).To3D(1.3));
-      Assert.AreEqual(new Line3F(a.To3D(1.1), b.To3D(2.7)), new Line2F(a, b).To3D(1.1, 2.7));
+      Assert.AreEqual(new Line3F(a.To3D(1.3), b.To3D(1.3)),
+                      new Line2F(a, b).To3D(1.3));
+      Assert.AreEqual(new Line3F(a.To3D(1.1), b.To3D(2.7)),
+                      new Line2F(a, b).To3D(1.1, 2.7));
     }
 
     [TestMethod, TestCategory("Small")]
     public void TestIntersectsLineLine() {
       Assert.IsTrue(new Line2F(new Point2F(0, 0), new Point2F(1, 1))
-          .Intersects(new Line2F(new Point2F(0, 1), new Point2F(1, 0))));
+                    .Intersects(new Line2F(new Point2F(0, 1),
+                                           new Point2F(1, 0))));
       Assert.IsFalse(new Line2F(new Point2F(0, 0), new Point2F(1, 0))
-          .Intersects(new Line2F(new Point2F(0, 1), new Point2F(1, 1))));
+                     .Intersects(new Line2F(new Point2F(0, 1),
+                                            new Point2F(1, 1))));
       Assert.IsFalse(new Line2F(new Point2F(0, 0), new Point2F(1, 1))
-          .Intersects(new Line2F(new Point2F(0.5, 0.5), new Point2F(1.5, 1.5))));
+                     .Intersects(new Line2F(new Point2F(0.5, 0.5),
+                                            new Point2F(1.5, 1.5))));
     }
 
     [TestMethod, TestCategory("Small")]
     public void TestIntersectsLineTriangle2F() {
       Assert.IsTrue(new Line2F(new Point2F(0, 0), new Point2F(1, 1))
-          .Intersects(new Triangle2F(
-            new Point2F(0, 1), new Point2F(1, 0), new Point2F(3, 3))));
+                    .Intersects(new Triangle2F(new Point2F(0, 1),
+                                               new Point2F(1, 0),
+                                               new Point2F(3, 3))));
       Assert.IsTrue(new Line2F(new Point2F(0, 0), new Point2F(1, 1))
-          .Intersects(new Triangle2F(
-            new Point2F(-5, -5), new Point2F(1, 0), new Point2F(0, 1))));
+                    .Intersects(new Triangle2F(new Point2F(-5, -5),
+                                               new Point2F(1, 0),
+                                               new Point2F(0, 1))));
       Assert.IsTrue(new Line2F(new Point2F(0, 0), new Point2F(1, 1))
-          .Intersects(new Triangle2F(
-            new Point2F(0, 2), new Point2F(-3, -2), new Point2F(0.5, 0))));
+                    .Intersects(new Triangle2F(new Point2F(0, 2),
+                                               new Point2F(-3, -2),
+                                               new Point2F(0.5, 0))));
       Assert.IsFalse(new Line2F(new Point2F(2, 0), new Point2F(3, 1))
-          .Intersects(new Triangle2F(
-            new Point2F(0, 2), new Point2F(-3, -2), new Point2F(0.5, 0))));
+                     .Intersects(new Triangle2F(new Point2F(0, 2),
+                                                new Point2F(-3, -2),
+                                                new Point2F(0.5, 0))));
     }
 
     [TestMethod, TestCategory("Small")]
@@ -140,17 +150,18 @@ namespace VEngrave_UnitTests {
       Assert.IsTrue(right[0].CalcNormal().Z > 0, "right[0] is CCW");
       GA.AssertAreApproxEqual(new Triangle3F(new Point3F(0.5, 0, 0), p100,
                                              new Point3F(1, 0.5, 0.5)),
-                           right[0], 1e-10);
+                              right[0], 1e-10);
 
       Assert.AreEqual(2, left.Count);
       Assert.IsTrue(left[0].CalcNormal().Z > 0, "left[0] is CCW");
       GA.AssertAreApproxEqual(new Triangle3F(new Point3F(0.5, 0, 0),
                                              new Point3F(1, 0.5, 0.5), p000),
-                           left[0], 1e-10);
+                              left[0], 1e-10);
 
       Assert.IsTrue(left[1].CalcNormal().Z > 0, "left[1] is CCW");
-      GA.AssertAreApproxEqual(new Triangle3F(new Point3F(1, 0.5, 0.5), p111, p000),
-                             left[1], 1e-10);      
+      GA.AssertAreApproxEqual(new Triangle3F(new Point3F(1, 0.5, 0.5),
+                                             p111, p000),
+                              left[1], 1e-10);
     }
 
     [TestMethod, TestCategory("Small")]
@@ -161,7 +172,8 @@ namespace VEngrave_UnitTests {
       Triangle3F t = new Triangle3F(p000, p100, p111);
       Triangle3FArray left = new Triangle3FArray();
       Triangle3FArray right = new Triangle3FArray();
-      Line3F line = new Line3F(new Point3F(0.5, -0.5, 1), new Point3F(0.5, 1.5, 2));
+      Line3F line = new Line3F(new Point3F(0.5, -0.5, 1),
+                               new Point3F(0.5, 1.5, 2));
 
       t.Slice(line, ref left, ref right);
 
@@ -169,18 +181,18 @@ namespace VEngrave_UnitTests {
       Assert.IsTrue(right[0].CalcNormal().Z > 0, "right[0] is CCW");
       GA.AssertAreApproxEqual(new Triangle3F(p100, new Point3F(0.5, 0.5, 0.5),
                                              new Point3F(0.5, 0, 0)),
-                           right[0], 1e-10);
+                              right[0], 1e-10);
 
       Assert.IsTrue(right[1].CalcNormal().Z > 0, "right[1] is CCW");
       GA.AssertAreApproxEqual(new Triangle3F(p100, p111,
                                              new Point3F(0.5, 0.5, 0.5)),
-                           right[1], 1e-10);
+                              right[1], 1e-10);
 
       Assert.AreEqual(1, left.Count);
       Assert.IsTrue(left[0].CalcNormal().Z > 0, "left[0] is CCW");
       GA.AssertAreApproxEqual(new Triangle3F(new Point3F(0.5, 0, 0),
                                              new Point3F(0.5, 0.5, 0.5), p000),
-                           left[0], 1e-10);
+                              left[0], 1e-10);
     }
 
     [TestMethod, TestCategory("Small")]
@@ -191,7 +203,8 @@ namespace VEngrave_UnitTests {
       Triangle3F t = new Triangle3F(p000, p100, p011);
       Triangle3FArray left = new Triangle3FArray();
       Triangle3FArray right = new Triangle3FArray();
-      Line3F line = new Line3F(new Point3F(-0.5, -0.5, 1), new Point3F(1.5, 1.5, 2));
+      Line3F line = new Line3F(new Point3F(-0.5, -0.5, 1),
+                               new Point3F(1.5, 1.5, 2));
 
       t.Slice(line, ref left, ref right);
 
@@ -227,7 +240,7 @@ namespace VEngrave_UnitTests {
 
       Assert.IsTrue(v1.Below(t));
       Assert.IsTrue(v2.Above(t));
-      // This gives an undefined point! 
+      // This gives an undefined point!
       //Assert.IsFalse(t.LinePlaneIntersection(v1, v2).IsUndefined);
     }
   }

@@ -66,7 +66,7 @@ namespace VEngrave_UnitTests {
       Vector3F ac = new Vector3F(s.Points[s.Faces[0].A],
                                  s.Points[s.Faces[0].C]);
       Assert.IsTrue(Vector3F.DotProduct(front,
-          Vector3F.CrossProduct(ab, ac)) >= 0);
+                                        Vector3F.CrossProduct(ab, ac)) >= 0);
     }
 
     [TestMethod, TestCategory("Small")]

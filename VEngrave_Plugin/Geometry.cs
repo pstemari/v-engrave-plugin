@@ -1,4 +1,4 @@
-﻿/* -*- mode: csharp; c-basic-offset: 2 -*- 
+﻿/* -*- mode: csharp; c-basic-offset: 2 -*-
  * Copyright 2013 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -98,7 +98,7 @@ namespace VEngraveForCamBam {
       // the line or the radius will be infinite.  Some
       // extra slop is needed in the cross product because
       // of the subtraction.
-      if (Math.Abs(crossProduct) < 2*DBL_EPSILON) {
+      if (Math.Abs(crossProduct) < 3*DBL_EPSILON) {
         if (Math.Min(start.X, end.X) - 2*DBL_EPSILON <= position.X
             && position.X <= Math.Max(start.X, end.X) + 2*DBL_EPSILON
             && Math.Min(start.Y, end.Y) - 2*DBL_EPSILON <= position.Y
@@ -228,7 +228,8 @@ namespace VEngraveForCamBam {
       // test is unreliable since CP-S can be very small and its direction
       // becomes indeterminate.
       var startToCP = new Vector2F(start, contactPoint);
-      if (Math.Sign(Vector2F.Determinant(startToCP, darc)) == Math.Sign(bulge)) {
+      if (Math.Sign(Vector2F.Determinant(startToCP, darc))
+          == Math.Sign(bulge)) {
       // Testing direction from the arc center doesn't
       // require such small differences, but the cross-products flip sign for
       // angles > 180.
@@ -241,7 +242,7 @@ namespace VEngraveForCamBam {
       //    Vector2F.Determinant(centerStart, centerEnd));
       //var dirContactPointEnd = Math.Sign(
       //    Vector2F.Determinant(centerContactPoint, centerEnd));
-      //if (dirStartContactPoint == dirStartEnd 
+      //if (dirStartContactPoint == dirStartEnd
       //    && dirContactPointEnd == dirStartEnd)  {
         // Contact point is between the arc's endpoint, check that
         // we're on the correct side of the position

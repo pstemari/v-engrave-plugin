@@ -33,36 +33,36 @@ namespace VEngrave_UnitTests {
     }
 
     public static void AssertAreApproxEqual(
-        Point2F expected, Point2F actual) {
+      Point2F expected, Point2F actual) {
       AssertAreApproxEqual(expected, actual, TOL);
     }
 
     public static void AssertAreApproxEqual(
-        Point2F expected, Point2F actual, double tol) {
+      Point2F expected, Point2F actual, double tol) {
       Assert.IsTrue(Point2F.Distance(expected, actual) <= tol,
-          "Distance between expected point {0} and actual point {1} greater "
-          + "than tolerance {2}", expected, actual, tol);
+                    "Distance between expected point {0} and actual point {1} "
+                    + "greater than tolerance {2}", expected, actual, tol);
     }
 
     public static void AssertAreApproxEqual(
-        Point3F expected, Point3F actual) {
+      Point3F expected, Point3F actual) {
       AssertAreApproxEqual(expected, actual, TOL);
     }
 
     public static void AssertAreApproxEqual(
-        Point3F expected, Point3F actual, double tol) {
+      Point3F expected, Point3F actual, double tol) {
       Assert.IsTrue(Point3F.Distance(expected, actual) <= tol,
-          "Distance between expected point {0} and actual point {1} greater "
-          + "than tolerance {2}", expected, actual, tol);
+                    "Distance between expected point {0} and actual point {1} "
+                    + "greater than tolerance {2}", expected, actual, tol);
     }
 
     public static void AssertAreApproxEqual(
-        Triangle2F expected, Triangle2F actual) {
+      Triangle2F expected, Triangle2F actual) {
       AssertAreApproxEqual(expected, actual, TOL);
     }
 
     public static void AssertAreApproxEqual(
-        Triangle2F expected, Triangle2F actual, double tol) {
+      Triangle2F expected, Triangle2F actual, double tol) {
       bool ok = false;
       for (int i = 0; !ok && i < 3; ++i) {
         ok = Point2F.Distance(expected.A, actual[i]) <= tol
@@ -70,18 +70,19 @@ namespace VEngrave_UnitTests {
           && Point2F.Distance(expected.C, actual[(i + 2) % 3]) <= tol;
       }
       Assert.IsTrue(ok, "Difference between expected triangle ({0}, {1}, {2}) "
-          + "and actual triangle ({3}, {4}, {5}) greater than tolerance {6}",
-          expected.A, expected.B, expected.C,
-          actual.A, actual.B, actual.C, tol);
+                    + "and actual triangle ({3}, {4}, {5}) greater than "
+                    + "tolerance {6}",
+                    expected.A, expected.B, expected.C,
+                    actual.A, actual.B, actual.C, tol);
     }
 
     public static void AssertAreApproxEqual(
-        Triangle3F expected, Triangle3F actual) {
+      Triangle3F expected, Triangle3F actual) {
       AssertAreApproxEqual(expected, actual, TOL);
     }
 
     public static void AssertAreApproxEqual(
-        Triangle3F expected, Triangle3F actual, double tol) {
+      Triangle3F expected, Triangle3F actual, double tol) {
       bool ok = false;
       for (int i = 0; !ok && i < 3; ++i) {
         ok = Point3F.Distance(expected.A, actual[i]) <= tol
@@ -89,9 +90,10 @@ namespace VEngrave_UnitTests {
           && Point3F.Distance(expected.C, actual[(i + 2) % 3]) <= tol;
       }
       Assert.IsTrue(ok, "Difference between expected triangle ({0}, {1}, {2}) "
-          + "and actual triangle ({3}, {4}, {5}) greater than tolerance {6}",
-          expected.A, expected.B, expected.C,
-          actual.A, actual.B, actual.C, tol);
+                    + "and actual triangle ({3}, {4}, {5}) greater than "
+                    + "tolerance {6}",
+                    expected.A, expected.B, expected.C,
+                    actual.A, actual.B, actual.C, tol);
     }
   }
 }

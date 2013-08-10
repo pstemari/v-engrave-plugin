@@ -392,34 +392,44 @@ namespace VEngrave_UnitTests {
       Assert.IsTrue(triangle.RegionInside(new Rect2F(new Point2F(0.5, 0.1),
                                                      new Point2F(0.5, 0.1))));
       double dval = 0.0;
-      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, 0.25), true, 1e-10, ref dval));
+      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, 0.25), true,
+                                             1e-10, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, 0.25), false, 1e-10, ref dval));
+      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, 0.25), false,
+                                             1e-10, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, 0.0), true, 1e-10, ref dval));
+      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, 0.0), true,
+                                              1e-10, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, 0.0), false, 1e-10, ref dval));
+      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, 0.0), false,
+                                             1e-10, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, -1e-3), true, 1e-2, ref dval));
+      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, -1e-3), true,
+                                              1e-2, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, -1e-3), false, 1e-2, ref dval));
+      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, -1e-3), false,
+                                              1e-2, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, +1e-3), true, 1e-2, ref dval));
+      Assert.IsFalse(triangle.PointInTriangle(new Point2F(0.5, +1e-3), true,
+                                              1e-2, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, +1e-3), false, 1e-2, ref dval));
+      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, +1e-3), false,
+                                             1e-2, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, +1e-1), true, 1e-2, ref dval));
+      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, +1e-1), true,
+                                             1e-2, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
       dval = 0.0;
-      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, +1e-1), false, 1e-2, ref dval));
+      Assert.IsTrue(triangle.PointInTriangle(new Point2F(0.5, +1e-1), false,
+                                             1e-2, ref dval));
       Assert.AreEqual(1.0, dval, 1e-10);
 
       Assert.IsTrue(triangle.PointInTriangleNew(new Point2F(0.5, 0.25)));
@@ -471,18 +481,18 @@ namespace VEngrave_UnitTests {
       var c = new Point3F(1.0, 1.0, 1.0);
       var triangle = new Triangle3F(a, b, c);
 
-      Point3F intersect = triangle.LinePlaneIntersection(new Point3F(0.5, 0.0, 0.25),
-                                                         new Point3F(0.5, 1.0, 0.25));
+      Point3F intersect = triangle.LinePlaneIntersection(
+        new Point3F(0.5, 0.0, 0.25), new Point3F(0.5, 1.0, 0.25));
       Assert.AreEqual(0.5, intersect.X, 1e-10);
       Assert.AreEqual(0.25, intersect.Y, 1e-10);
       Assert.AreEqual(0.25, intersect.Z, 1e-10);
-      Point3F outsideintersect = triangle.LinePlaneIntersection(new Point3F(0.5, 0.0, 0.75),
-                                                                new Point3F(0.5, 1.0, 0.75));
+      Point3F outsideintersect = triangle.LinePlaneIntersection(
+        new Point3F(0.5, 0.0, 0.75), new Point3F(0.5, 1.0, 0.75));
       Assert.AreEqual(0.5, outsideintersect.X, 1e-10);
       Assert.AreEqual(0.75, outsideintersect.Y, 1e-10);
       Assert.AreEqual(0.75, outsideintersect.Z, 1e-10);
-      Point3F notintersect = triangle.LinePlaneIntersection(new Point3F(0.5, 0.0, 0.75),
-                                                            new Point3F(0.5, 1.0, 1.75));
+      Point3F notintersect = triangle.LinePlaneIntersection(
+        new Point3F(0.5, 0.0, 0.75), new Point3F(0.5, 1.0, 1.75));
       Assert.IsTrue(notintersect.IsUndefined);
 
       var e2d = new Point2F(0.2, 0.3);
@@ -497,7 +507,8 @@ namespace VEngrave_UnitTests {
       }
       triangle = new Triangle3F(
           new Point3F(1.10455260341352, 1.10864904182517, 0),
-          new Point3F(1.10366597719706, 1.10753169851535, -0.00101254294727068),
+          new Point3F(1.10366597719706, 1.10753169851535,
+                      -0.00101254294727068),
           new Point3F(1.10445890833639, 1.10690201333341, 0));
       var v1 = new Point3F(1.10366597719706, 1.10753169851535, 
                            -0.00101254294727068);
@@ -550,7 +561,8 @@ namespace VEngrave_UnitTests {
       Point3F triangleMin = new Point3F(), triangleMax = new Point3F();
       triangle.Extrema(ref triangleMin, ref triangleMax);
       foreach (Triangle3F remainingFacet in facets) {
-        Point3F remainingFacetMin = new Point3F(), remainingFacetMax = new Point3F();
+        Point3F remainingFacetMin = new Point3F(),
+                remainingFacetMax = new Point3F();
         remainingFacet.Extrema(ref remainingFacetMin, ref remainingFacetMax);
         Assert.IsTrue(triangleMax.X < remainingFacetMin.X
                       || remainingFacetMax.X < triangleMin.X

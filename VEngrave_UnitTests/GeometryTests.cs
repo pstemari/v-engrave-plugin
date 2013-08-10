@@ -1,4 +1,4 @@
-﻿/* -*- mode: csharp; c-basic-offset: 2 -*- 
+﻿/* -*- mode: csharp; c-basic-offset: 2 -*-
  * Copyright 2013 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,7 @@ namespace VEngrave_UnitTests {
   [TestClass]
   public class GeometryTests {
     private const double DEGREES = Math.PI/180;
+    private const double DBL_EPSILON = 2.2204460492503131e-016;
 
     private Point2F Transform(Point2F point, double dx, double dy,
                               double theta) {
@@ -54,7 +55,7 @@ namespace VEngrave_UnitTests {
     }
 
     private PolylineItem Transform(PolylineItem item,
-                                    double dx, double dy, double theta) {
+                                   double dx, double dy, double theta) {
       return new PolylineItem(Transform(item.Point, dx, dy, theta),
                               item.Bulge);
     }
@@ -65,19 +66,23 @@ namespace VEngrave_UnitTests {
     }
 
     private void JitterRadiusToLineSegment(string msg, double expectedRadius,
-                                            Point2F position, Vector2F normal,
-                                            Point2F start, Point2F end) {
+                                           Point2F position, Vector2F normal,
+                                           Point2F start, Point2F end) {
       for (double dx = -0.5; dx <= 0.5; dx += 0.1) {
         for (double dy = -0.5; dy <= 0.5; dy += 0.1) {
           for (double dtheta = 0; dtheta <= 360*DEGREES; dtheta += 15*DEGREES) {
+            var txfpos = Transform(position, dx, dy, dtheta);
+            var txfnorm = Transform(normal, dtheta);
+            var txfstart = Transform(start, dx, dy, dtheta);
+            var txfend = Transform(end, dx, dy, dtheta);
             GA.AssertAreApproxEqual(msg + " dx: " + dx + ", "
-                                    + "dy: " + dy + ", " + "dtheta: " + dtheta,
+                                    + "dy: " + dy + ", "
+                                    + "dtheta: " + dtheta,
                                     expectedRadius,
-                                    Geometry.RadiusToLineSegment(
-                                        Transform(position, dx, dy, dtheta),
-                                        Transform(normal, dtheta),
-                                        Transform(start, dx, dy, dtheta),
-                                        Transform(end, dx, dy, dtheta)));
+                                    Geometry.RadiusToLineSegment(txfpos,
+                                                                 txfnorm,
+                                                                 txfstart,
+                                                                 txfend));
           }
         }
       }
@@ -100,8 +105,8 @@ namespace VEngrave_UnitTests {
       Point2F start = new Point2F(1, 0);
       Point2F end = new Point2F(1, 1);
       JitterRadiusToLineSegment(
-          "TestRadiusToLineSegmentHorizontalPerpendictular",
-          0.5, position, unitNormal, start, end);
+        "TestRadiusToLineSegmentHorizontalPerpendictular",
+        0.5, position, unitNormal, start, end);
     }
 
     [TestMethod, TestCategory("Medium")]
@@ -136,6 +141,34 @@ namespace VEngrave_UnitTests {
                                 start, end);
     }
 
+    [TestMethod, TestCategory("Small"), TestCategory("Repro")]
+    public void TestRadiusToLineSegmentColinear02010785() {
+      Point2F position = new Point2F(0, 0);
+      Vector2F normal = new Vector2F(0, 1);
+      Point2F start = new Point2F(1, 0);
+      Point2F end = new Point2F(2, 0);
+      double dx = 0.2;
+      double dy = -0.1;
+      double dtheta = 45*DEGREES;
+
+      var txfpos = Transform(position, dx, dy, dtheta);
+      var txfnorm = Transform(normal, dtheta);
+      var txfstart = Transform(start, dx, dy, dtheta);
+      var txfend = Transform(end, dx, dy, dtheta);
+
+      //var txfpos = new Point2F(0.212132034355964, 0.0707106781186547);
+      //var txfnorm = new Vector2F(-0.707106781186547, 0.707106781186548);
+      //var txfstart = new Point2F(0.919238815542512, 0.777817459305202);
+      //var txfend = new Point2F(1.62634559672906, 1.48492424049175);
+
+      Assert.AreEqual(-1.0, Vector2F.Determinant(txfnorm, new Vector2F(txfstart, txfend)), 4*DBL_EPSILON);
+      Assert.AreEqual(0.0, Vector2F.DotProduct(txfnorm, new Vector2F(txfstart, txfend)), 4*DBL_EPSILON);
+
+      GA.AssertAreApproxEqual("TestRadiusToLineSegmentColinear02010785",
+                              Double.MaxValue,
+                              Geometry.RadiusToLineSegment(
+                                txfpos, txfnorm, txfstart, txfend));
+    }
     [TestMethod, TestCategory("Medium")]
     public void TestRadiusToLineSegmentObtuse() {
       Point2F position = new Point2F(0.5, 0);
@@ -148,8 +181,8 @@ namespace VEngrave_UnitTests {
     }
 
     private void JitterRadiusToEndPoint(
-        string msg, double expectedRadius,
-        Point2F position, Vector2F normal, Point2F endPoint) {
+      string msg, double expectedRadius,
+      Point2F position, Vector2F normal, Point2F endPoint) {
       for (double dx = -0.5; dx <= 0.5; dx += 0.1) {
         for (double dy = -0.5; dy <= 0.5; dy += 0.1) {
           for (double dtheta = 0; dtheta <= 2*Math.PI; dtheta += Math.PI/12) {
@@ -157,9 +190,9 @@ namespace VEngrave_UnitTests {
                                     + "dtheta: " + dtheta,
                                     expectedRadius,
                                     Geometry.RadiusToEndPoint(
-                                        Transform(position, dx, dy, dtheta),
-                                        Transform(normal, dtheta),
-                                        Transform(endPoint, dx, dy, dtheta)));
+                                      Transform(position, dx, dy, dtheta),
+                                      Transform(normal, dtheta),
+                                      Transform(endPoint, dx, dy, dtheta)));
           }
         }
       }
@@ -211,13 +244,13 @@ namespace VEngrave_UnitTests {
     }
 
     private void JitterConvertBulgeToArc(
-        string msg,
-        double expectedRadius, Point2F expectedCenter,
-        Point2F start, Point2F end, double bulge) {
+      string msg,
+      double expectedRadius, Point2F expectedCenter,
+      Point2F start, Point2F end, double bulge) {
       for (double dx = -0.5; dx <= 0.5; dx += 0.25) {
         for (double dy = -0.5; dy <= 0.5; dy += 0.25) {
           for (double dtheta = 0; dtheta <= 2*Math.PI;
-                  dtheta += Math.PI/12) {
+               dtheta += Math.PI/12) {
             string iter = " dx: " + dx +", dy: " + dy +", dtheta: " + dtheta;
             Point2F center;
             double radius = Geometry.ConvertBulgeToArc(
@@ -259,7 +292,7 @@ namespace VEngrave_UnitTests {
                               expectedCenter, start, end, bulge);
     }
 
-    [TestMethod, TestCategory("Large")]
+    [TestMethod, TestCategory("Medium")]
     public void TestConvertBulgeToArcMany() {
       Point2F start = new Point2F(1, 0);
       double expectedRadius = 1;
@@ -269,35 +302,35 @@ namespace VEngrave_UnitTests {
         double bulge = Math.Tan(sweep/4);
         Point2F expectedCenter = new Point2F(0, 0);
         JitterConvertBulgeToArc(
-            "TestConvertBulgeToArcMany sweep: " + sweep,
-            expectedRadius, expectedCenter, start, end, bulge);
+          "TestConvertBulgeToArcMany sweep: " + sweep,
+          expectedRadius, expectedCenter, start, end, bulge);
       }
     }
 
     private void JitterRadiusToArc(
-            string msg, double expectedRadius,
-            Point2F position, Vector2F normal,
-            Point2F start, Point2F end, double bulge) {
+      string msg, double expectedRadius,
+      Point2F position, Vector2F normal,
+      Point2F start, Point2F end, double bulge) {
       for (double dx = -0.5; dx <= 0.5; dx += 0.25) {
         for (double dy = -0.5; dy <= 0.5; dy += 0.25) {
           for (double dtheta = 0; dtheta <= 360*DEGREES;
-                  dtheta += 15*DEGREES) {
+               dtheta += 15*DEGREES) {
             string itermsg = msg + " dx: " + dx +", "
-                                + "dy: " + dy + ", " + "dtheta: " + dtheta;
+              + "dy: " + dy + ", " + "dtheta: " + dtheta;
             GA.AssertAreApproxEqual(itermsg, expectedRadius,
-                    Geometry.RadiusToArc(
-                            Transform(position, dx, dy, dtheta),
-                            Transform(normal, dtheta),
-                            Transform(start, dx, dy, dtheta),
-                            Transform(end, dx, dy, dtheta),
-                            bulge));
+                                    Geometry.RadiusToArc(
+                                      Transform(position, dx, dy, dtheta),
+                                      Transform(normal, dtheta),
+                                      Transform(start, dx, dy, dtheta),
+                                      Transform(end, dx, dy, dtheta),
+                                      bulge));
             GA.AssertAreApproxEqual(itermsg + " inverted", expectedRadius,
-                    Geometry.RadiusToArc(
-                            Transform(position, dx, dy, dtheta),
-                            Transform(normal, dtheta),
-                            Transform(end, dx, dy, dtheta),
-                            Transform(start, dx, dy, dtheta),
-                            -bulge));
+                                    Geometry.RadiusToArc(
+                                      Transform(position, dx, dy, dtheta),
+                                      Transform(normal, dtheta),
+                                      Transform(end, dx, dy, dtheta),
+                                      Transform(start, dx, dy, dtheta),
+                                      -bulge));
           }
         }
       }
@@ -323,7 +356,7 @@ namespace VEngrave_UnitTests {
       double bulge = 1.0;
       GA.AssertAreApproxEqual("TestRadiusToArcDirectConcaveLargeInsideBow",
                               0.375, Geometry.RadiusToArc(
-                              position, unitNormal, start, end, bulge));
+                                position, unitNormal, start, end, bulge));
     }
 
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
@@ -335,7 +368,7 @@ namespace VEngrave_UnitTests {
       double bulge = 1.0;
       GA.AssertAreApproxEqual("TestRadiusToArcDirectConcaveLargeRadius",
                               0.5, Geometry.RadiusToArc(
-                                  position, unitNormal, start, end, bulge));
+                                position, unitNormal, start, end, bulge));
     }
 
     [TestMethod, TestCategory("Small")]
@@ -371,7 +404,7 @@ namespace VEngrave_UnitTests {
     }
 
     private void TestRadiusToArcSuperConvexOverRadiusAndPositionAngle(
-        Vector2F unitNormal, double tangentRadius) {
+      Vector2F unitNormal, double tangentRadius) {
       Point2F position = new Point2F(0, -tangentRadius);
 
       for (double arcRadius = 0.1; arcRadius <= 10; arcRadius *= 7) {
@@ -379,18 +412,18 @@ namespace VEngrave_UnitTests {
         for (double positionAngle = -89*DEGREES; positionAngle <= 269*DEGREES;
              positionAngle += 27*DEGREES) {
           Point2F arcCenter = new Point2F(
-              (arcRadius + tangentRadius)*Math.Cos(positionAngle),
-              (arcRadius + tangentRadius)*Math.Sin(positionAngle));
+            (arcRadius + tangentRadius)*Math.Cos(positionAngle),
+            (arcRadius + tangentRadius)*Math.Sin(positionAngle));
           TestRadiusToArcSuperConvexOverArcLengths(position, unitNormal,
-                                       tangentRadius, positionAngle,
-                                       arcCenter, arcRadius);
+                                                   tangentRadius, positionAngle,
+                                                   arcCenter, arcRadius);
         }
       }
     }
 
     private void TestRadiusToArcSuperConvexOverArcLengths(
-            Point2F position, Vector2F unitNormal, double tangentRadius,
-            double positionAngle, Point2F arcCenter, double arcRadius) {
+      Point2F position, Vector2F unitNormal, double tangentRadius,
+      double positionAngle, Point2F arcCenter, double arcRadius) {
       // start just before the radius vector and work clockwise to
       // the radius vector
       for (double arcStart = positionAngle + 179*DEGREES;
@@ -401,11 +434,11 @@ namespace VEngrave_UnitTests {
         // start just after the radius vector and work counter-clockwise
         // to start
         for (double arcEnd = positionAngle + 181*DEGREES;
-                    arcEnd < arcStart + 359*DEGREES;
-                    arcEnd  += 17*DEGREES) {
+             arcEnd < arcStart + 359*DEGREES;
+             arcEnd  += 17*DEGREES) {
           Point2F end = new Point2F(
-                  arcCenter.X + arcRadius*Math.Cos(arcEnd),
-                  arcCenter.Y + arcRadius*Math.Sin(arcEnd));
+            arcCenter.X + arcRadius*Math.Cos(arcEnd),
+            arcCenter.Y + arcRadius*Math.Sin(arcEnd));
           double bulge=Math.Tan((arcEnd - arcStart)/4);
           JitterRadiusToArc("TestRadiusToArcSuperConvex, "
                             + "tangentRadius: " + tangentRadius           + ", "
@@ -433,8 +466,8 @@ namespace VEngrave_UnitTests {
 
       Point2F position = new Point2F(0 + dx, -tangentRadius + dy);
       Point2F arcCenter = new Point2F(
-          (arcRadius + tangentRadius)*Math.Cos(positionAngle) + dx,
-          (arcRadius + tangentRadius)*Math.Sin(positionAngle) + dy);
+        (arcRadius + tangentRadius)*Math.Cos(positionAngle) + dx,
+        (arcRadius + tangentRadius)*Math.Sin(positionAngle) + dy);
       Point2F start = new Point2F(arcCenter.X + arcRadius*Math.Cos(arcStart),
                                   arcCenter.Y + arcRadius*Math.Sin(arcStart));
       Point2F end = new Point2F(arcCenter.X + arcRadius*Math.Cos(arcEnd),
@@ -442,7 +475,7 @@ namespace VEngrave_UnitTests {
       double bulge=Math.Tan((arcEnd - arcStart)/4);
       GA.AssertAreApproxEqual("TestRadiusToArcSuperConvexPAm85",
                               tangentRadius, Geometry.RadiusToArc(
-                                  position, unitNormal, start, end, bulge));
+                                position, unitNormal, start, end, bulge));
     }
 
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
@@ -460,8 +493,8 @@ namespace VEngrave_UnitTests {
 
       Point2F position = new Point2F(0 + dx, -tangentRadius + dy);
       Point2F arcCenter = new Point2F(
-              (arcRadius + tangentRadius)*Math.Cos(positionAngle) + dx,
-              (arcRadius + tangentRadius)*Math.Sin(positionAngle) + dy);
+        (arcRadius + tangentRadius)*Math.Cos(positionAngle) + dx,
+        (arcRadius + tangentRadius)*Math.Sin(positionAngle) + dy);
       Point2F start = new Point2F(arcCenter.X + arcRadius*Math.Cos(arcStart),
                                   arcCenter.Y + arcRadius*Math.Sin(arcStart));
       Point2F end = new Point2F(arcCenter.X + arcRadius*Math.Cos(arcEnd),
@@ -487,8 +520,8 @@ namespace VEngrave_UnitTests {
 
       Point2F position = new Point2F(0 + dx, -tangentRadius + dy);
       Point2F arcCenter = new Point2F(
-              (arcRadius + tangentRadius)*Math.Cos(positionAngle) + dx,
-              (arcRadius + tangentRadius)*Math.Sin(positionAngle) + dy);
+        (arcRadius + tangentRadius)*Math.Cos(positionAngle) + dx,
+        (arcRadius + tangentRadius)*Math.Sin(positionAngle) + dy);
       Point2F start = new Point2F(arcCenter.X + arcRadius*Math.Cos(arcStart),
                                   arcCenter.Y + arcRadius*Math.Sin(arcStart));
       Point2F end = new Point2F(arcCenter.X + arcRadius*Math.Cos(arcEnd),
@@ -496,12 +529,13 @@ namespace VEngrave_UnitTests {
       double bulge = Math.Tan((arcEnd - arcStart)/4);
       GA.AssertAreApproxEqual("TestRadiusToArcSuperConvexPA100AS227",
                               tangentRadius, Geometry.RadiusToArc(
-                                  position, unitNormal, start, end, bulge));
+                                position, unitNormal, start, end, bulge));
     }
 
     [TestMethod, TestCategory("Small"), TestCategory("Repro")]
     public void TestRadiusToArcInnerCorner() {
-      Point2F  position = new Point2F(0.54557606689115667, 0.013894560011917596);
+      Point2F  position = new Point2F(0.54557606689115667,
+                                      0.013894560011917596);
       Vector2F normal   = new Vector2F(-0.22903933372553, 0.97341716833358);
       Point2F  start    = new Point2F(0.545576066891157, 0.0138945600119176);
       Point2F  end      = new Point2F(0.535981127214644, 0.0304597381094125);
@@ -510,7 +544,7 @@ namespace VEngrave_UnitTests {
                                                 start, end, bulge),
                       1e-10, "TestRadiusToArcInnerCorner");
       JitterRadiusToArc("TestRadiusToArcInnerCorner",
-                         0.0, position, normal, start, end, bulge);
+                        0.0, position, normal, start, end, bulge);
     }
 
     [TestMethod, TestCategory("Medium")]
@@ -535,7 +569,7 @@ namespace VEngrave_UnitTests {
       double bulge = 0.8;
       GA.AssertAreApproxEqual("TestRadiusToArcEndpointDirectBulge08", 0.5,
                               Geometry.RadiusToArc(
-                                  position, unitNormal, start, end, bulge));
+                                position, unitNormal, start, end, bulge));
     }
 
     private void JitterGetCornerType(string msg,
@@ -547,16 +581,16 @@ namespace VEngrave_UnitTests {
         for (double dy = -0.5; dy <= 0.5; dy += 0.1) {
           for (double theta = 0; theta < 360*DEGREES; theta += 5*DEGREES) {
             string itermsg = msg + " dx: " + dx +", "
-                                + "dy: " + dy + ", " + "theta: " + theta;
+              + "dy: " + dy + ", " + "theta: " + theta;
             Vector2F nextNormal;
             Assert.AreEqual(expectedType,
                             Geometry.GetCornerType(
-                                Transform(prev, dx, dy, theta),
-                                Transform(curr, dx, dy, theta),
-                                Transform(next, dx, dy, theta),
-                                threshold: 135*DEGREES,
-                                leftIsInside: leftIsInside,
-                                nextNormal: out nextNormal),
+                              Transform(prev, dx, dy, theta),
+                              Transform(curr, dx, dy, theta),
+                              Transform(next, dx, dy, theta),
+                              threshold: 135*DEGREES,
+                              leftIsInside: leftIsInside,
+                              nextNormal: out nextNormal),
                             itermsg);
             if (!expectedNormal.IsUndefined) {
               Vector2F xfxnorm = Transform(expectedNormal, theta);

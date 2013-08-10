@@ -106,8 +106,9 @@ namespace VEngraveForCamBam {
     }
 
     internal bool CorrectPermutation(Point3F a, Point3F b, Point3F c) {
-      return Vector3F.DotProduct(
-        Vector3F.CrossProduct(new Vector3F(a, b), new Vector3F(a, c)), Front) >= 0;
+      return Vector3F.DotProduct(Vector3F.CrossProduct(new Vector3F(a, b),
+                                                       new Vector3F(a, c)),
+                                 Front) >= 0;
     }
   }
 
