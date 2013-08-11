@@ -136,7 +136,7 @@ namespace VEngraveForCamBam {
     }
 
     private void About(object sender, EventArgs e) {
-      ThisApplication.MsgBox("VEngrave CamBam plug-in v0.001");
+      ThisApplication.MsgBox("VEngrave CamBam plug-in b0001");
     }
 
     //private void _TestXMLCommand(object sender, EventArgs unused) {
