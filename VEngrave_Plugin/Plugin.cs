@@ -43,6 +43,7 @@ namespace VEngraveForCamBam {
     void Log(int level, string format, params object[] vars);
   }
 
+  [Serializable]
   internal class CamBamLogger : Logger {
     public void Log(string msg) {
       ThisApplication.AddLogMessage(msg);
@@ -58,6 +59,7 @@ namespace VEngraveForCamBam {
     }
   }
 
+  [Serializable]
   internal class NullLogger : Logger {
     public void Log(string msg) { }
     public void Log(int level, string msg) { }
@@ -136,7 +138,7 @@ namespace VEngraveForCamBam {
     }
 
     private void About(object sender, EventArgs e) {
-      ThisApplication.MsgBox("VEngrave CamBam plug-in b0001");
+      ThisApplication.MsgBox("VEngrave CamBam plug-in b0003");
     }
 
     //private void _TestXMLCommand(object sender, EventArgs unused) {
@@ -254,7 +256,7 @@ namespace VEngraveForCamBam {
   //   }
   // }
 
-  [XmlType("MOPVEngrave")]
+  [XmlType("MOPVEngrave"), Serializable]
   public class MOPVEngrave : MOPFromGeometry, IIcon {
     // Smallest number such that 1.0 + DBL_EPSILON != 1.0
     const double DBL_EPSILON = 2.2204460492503131e-016;
