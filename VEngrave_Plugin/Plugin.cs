@@ -298,7 +298,7 @@ namespace VEngraveForCamBam {
     [DisplayName("Path Step Size"),
      Description("Length of step in path"),
      DefaultValue(DEFAULT_PATH_INCREMENT),
-     Category("Options"), CBAdvancedValue, XmlIgnore]
+     Category("Options"), CBAdvancedValue]
     public CBValue<double> PathIncrement {
       set {
         if (value.IsValue && value.Value <= 0) {
@@ -311,6 +311,7 @@ namespace VEngraveForCamBam {
           _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT);
           _pathIncrement.Value = _pathIncrement.Cached;
         }
+        SetDirty();
       }
       get { return _pathIncrement; }
     }
@@ -331,7 +332,7 @@ namespace VEngraveForCamBam {
                  + "sharp point"),
      Category("Options"),
      DefaultValue(DEFAULT_MAX_CORNER_ANGLE),
-     CBAdvancedValue, XmlIgnore]
+     CBAdvancedValue]
     public CBValue<double> MaxCornerAngle {
       set {
         if (value.IsValue && (value.Value < 0 || 180 < value.Value)) {
@@ -344,6 +345,7 @@ namespace VEngraveForCamBam {
           _maxCornerAngle.SetCache(DEFAULT_MAX_CORNER_ANGLE);
           _maxCornerAngle.Value = _maxCornerAngle.Cached;
         }
+        SetDirty();
       }
       get { return _maxCornerAngle; }
     }
@@ -357,8 +359,7 @@ namespace VEngraveForCamBam {
 #endregion
 #region MaxDepthProperty
     [DisplayName("Max Depth"),
-     Description("Maximum depth for cuts"), Category("Cutting Depth"),
-     XmlIgnore]
+     Description("Maximum depth for cuts"), Category("Cutting Depth")]
     public CBValue<double> MaxDepth {
       set {
         if (value.IsValue && value.Value <= 0) {
@@ -371,6 +372,7 @@ namespace VEngraveForCamBam {
           _maxDepth.SetState(CBValueStates.Auto);
           _maxDepth.ClearCache();
         }
+        SetDirty();
       }
       get { return _maxDepth; }
     }
@@ -389,7 +391,7 @@ namespace VEngraveForCamBam {
     const double DEFAULT_TOOL_TIP_DIAMETER = 0.0;
     [DisplayName("Tool Tip Diameter"),
      Description("Tip diameter of engraving tool"),
-     DefaultValue(DEFAULT_TOOL_TIP_DIAMETER), Category("Tool"), XmlIgnore]
+     DefaultValue(DEFAULT_TOOL_TIP_DIAMETER), Category("Tool")]
     public CBValue<double> ToolTipDiameter {
       set {
         if (value.IsValue && value.Value < 0) {
@@ -402,6 +404,7 @@ namespace VEngraveForCamBam {
           _toolTipDiameter.SetCache(DEFAULT_TOOL_TIP_DIAMETER);
           _toolTipDiameter.Value = _toolTipDiameter.Cached;
         }
+        SetDirty();
       }
       get { return _toolTipDiameter; }
     }
@@ -417,7 +420,7 @@ namespace VEngraveForCamBam {
     const double DEFAULT_TOOL_V_ANGLE = 90.0;
     [DisplayName("Tool V-Angle"),
      Description("V-angle of engraving tool"),
-     DefaultValue(DEFAULT_TOOL_V_ANGLE), Category("Tool"), XmlIgnore]
+     DefaultValue(DEFAULT_TOOL_V_ANGLE), Category("Tool")]
     public CBValue<double> ToolVAngle {
       set {
         if (value.IsValue && (value.Value <= 0 || 180 <= value.Value)) {
@@ -431,6 +434,7 @@ namespace VEngraveForCamBam {
           _toolVAngle.Value = _toolVAngle.Cached;
         }
         _cotHalfVAngle = 1.0/Math.Tan(0.5*_toolVAngle.Value*DEGREES);
+        SetDirty();
       }
       get { return _toolVAngle; }
     }
@@ -487,6 +491,12 @@ namespace VEngraveForCamBam {
 
     public override CamBam.CAM.MachineOp Clone() {
       return new MOPVEngrave(this);
+    }
+
+    private void SetDirty() {
+      if (CADFile != null) {
+        CADFile.Modified = true;
+      }
     }
 
     protected override void _GenerateToolpathsWorker() {

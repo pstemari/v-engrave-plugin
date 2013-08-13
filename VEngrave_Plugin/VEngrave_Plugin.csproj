@@ -89,6 +89,7 @@
     <EmbeddedResource Include="Properties\VCarveResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>VCarveResources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
