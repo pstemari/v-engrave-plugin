@@ -86,7 +86,7 @@ namespace VEngraveForCamBam {
 
       var insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VEngraveResources.VEngraveButton;
+      insertMOPCommand.Image = Properties.VEngraveResources.cam_VEngraveButton1;
       insertMOPCommand.Click += InsertMOP;
 
       for (int i = 0; i < _ui.Menus.mnuMachining.DropDownItems.Count; ++i) {
@@ -100,7 +100,7 @@ namespace VEngraveForCamBam {
 
       insertMOPCommand = insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VEngraveResources.VEngraveButton;
+      insertMOPCommand.Image = Properties.VEngraveResources.cam_VEngraveButton1;
       insertMOPCommand.Click += InsertMOP;
 
       foreach (ToolStripItem item
@@ -131,6 +131,11 @@ namespace VEngraveForCamBam {
       // copying external assembly objects that have not been serialized.
       new XmlSerializer(typeof(MOPVEngrave))
         .Serialize(new MemoryStream(), new MOPVEngrave());
+
+      var dumpMopTreeCommand = new ToolStripMenuItem();
+      dumpMopTreeCommand.Text = "Dump MOP tree";
+      dumpMopTreeCommand.Click += DumpMOPTree;
+      _ui.Menus.mnuPlugins.DropDownItems.Add(dumpMopTreeCommand);
     }
 
     public static void InitPlugin(CamBamUI ui) {
@@ -139,6 +144,16 @@ namespace VEngraveForCamBam {
 
     private void About(object sender, EventArgs e) {
       ThisApplication.MsgBox("VEngrave CamBam plug-in b0003");
+    }
+
+    private void DumpMOPTree(object sender, EventArgs e) {
+      foreach (TreeNode partNode in CamBamUI.MainUI.ActiveView.DrawingTree.Machining.Nodes) {
+        partNode.Expand();
+        foreach (TreeNode opNode in partNode.Nodes) {
+          _log.Log("Machine op node {0}, text {1}; image key {2}, index {3}",
+                    opNode.Name, opNode.Text, opNode.ImageKey, opNode.ImageIndex);
+        }
+      }
     }
 
     private void InsertMOP(object sender, EventArgs e) {
@@ -159,8 +174,6 @@ namespace VEngraveForCamBam {
         if (partNode.Tag == view.CADFile.ActivePart) {
           partNode.Expand();
           foreach (TreeNode opNode in partNode.Nodes) {
-            _log.Log("Machine op node {0}, text {1}; image key {2}, index {3}",
-                     opNode.Name, opNode.Text, opNode.ImageKey, opNode.ImageIndex);
             if (opNode.Tag == mop) {
               mop.Name = opNode.Text;
               opNode.EnsureVisible();
@@ -195,22 +208,22 @@ namespace VEngraveForCamBam {
     // UI properties
     [XmlIgnore]
     System.Drawing.Image IIcon.ActiveIconImage {
-      get { return Properties.VEngraveResources.VEngraveButton; }
+      get { return Properties.VEngraveResources.cam_VEngraveButton1; }
     }
 
     [XmlIgnore]
     string IIcon.ActiveIconKey {
-      get { return "VEngraveButton"; }
+      get { return "cam_VEngraveButton1"; }
     }
 
     [XmlIgnore]
     System.Drawing.Image IIcon.InactiveIconImage {
-      get { return Properties.VEngraveResources.VEngraveButton; }
+      get { return Properties.VEngraveResources.cam_VEngraveButton1; }
     }
 
     [XmlIgnore]
     string IIcon.InactiveIconKey {
-      get { return "VEngraveButton"; }
+      get { return "cam_VEngraveButton1"; }
     }
 #endregion
 
