@@ -86,7 +86,7 @@ namespace VEngraveForCamBam {
 
       var insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VCarveResources.VCarveButton;
+      insertMOPCommand.Image = Properties.VEngraveResources.VEngraveButton;
       insertMOPCommand.Click += InsertMOP;
 
       for (int i = 0; i < _ui.Menus.mnuMachining.DropDownItems.Count; ++i) {
@@ -100,7 +100,7 @@ namespace VEngraveForCamBam {
 
       insertMOPCommand = insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VCarveResources.VCarveButton;
+      insertMOPCommand.Image = Properties.VEngraveResources.VEngraveButton;
       insertMOPCommand.Click += InsertMOP;
 
       foreach (ToolStripItem item
@@ -141,23 +141,6 @@ namespace VEngraveForCamBam {
       ThisApplication.MsgBox("VEngrave CamBam plug-in b0003");
     }
 
-    //private void _TestXMLCommand(object sender, EventArgs unused) {
-    //  try {
-    //    ClassHelper.SerializeToXmlFile(
-    //      CamBamUI.MainUI.ActiveView.CADFile,
-    //      @"C:\Users\Paul J. Ste. Marie\Documents\CADCAM\TestXMLSerialization.xml");
-    //    //CBXmlSerializer serializer = new CBXmlSerializer(typeof(CADFile));
-    //    //TextWriter writer = new StreamWriter(
-    //    //        @"C:\Users\Paul J. Ste. Marie\Documents\CADCAM\TestXMLSerialization.xml");
-    //    //serializer.WriteXml(new System.Xml.XmlTextWriter(writer),
-    //    //    CamBamUI.MainUI.ActiveView.CADFile);
-    //  } catch (InvalidOperationException e) {
-    //    ThisApplication.AddLogMessage(
-    //      "Exception {0} when serializing document, inner exception: {1}",
-    //      e, e.InnerException);
-    //  }
-    //}
-
     private void InsertMOP(object sender, EventArgs e) {
       ICADView view = CamBamUI.MainUI.ActiveView;
       CADFile file = view.CADFile;
@@ -176,6 +159,8 @@ namespace VEngraveForCamBam {
         if (partNode.Tag == view.CADFile.ActivePart) {
           partNode.Expand();
           foreach (TreeNode opNode in partNode.Nodes) {
+            _log.Log("Machine op node {0}, text {1}; image key {2}, index {3}",
+                     opNode.Name, opNode.Text, opNode.ImageKey, opNode.ImageIndex);
             if (opNode.Tag == mop) {
               mop.Name = opNode.Text;
               opNode.EnsureVisible();
@@ -186,75 +171,11 @@ namespace VEngraveForCamBam {
         }
       }
 
-      // _ui.InsertMOP ?
       foreach (var smop in CamBamUI.MainUI.CADFileTree.SelectedMOPs) {
         ThisApplication.AddLogMessage("SelectedMOPs: {0}", smop.Name);
       }
     }
   }
-
-  // public interface IPathIterator {
-  //   bool hasNext();
-  //   Point2F next();
-  // }
-
-  // public class LineSegmentIterator : IPathIterator {
-  //   private Point2F current;
-  //   private int nLeft;
-  //   private Vector2F dse;
-  //   public LineSegmentIterator(Point2F start, Point2F end, double dl) {
-  //     current = new Point2F(start.X, start.Y);
-  //     dse = new Vector2F(start, end);
-  //     double length = dse.Length;
-  //     nLeft = (int) (length/dl) + 1;
-  //     if (nLeft < 2) {
-  //       nLeft = 2;
-  //     }
-  //     dse.X /= (nLeft - 1);
-  //     dse.Y /= (nLeft - 1);
-  //   }
-  //   public bool hasNext() {
-  //     return nLeft > 0;
-  //   }
-  //   public Point2F next() {
-  //     Point2F rv = current;
-  //     current = new Point2F(rv.X + dse.X, rv.Y + dse.Y);
-  //     --nLeft;
-  //     return rv;
-  //   }
-  // }
-
-  // public class ArcIterator : IPathIterator {
-  //   private Point2F center;
-  //   private int nLeft;
-  //   private double radius, theta, dTheta;
-  //   public ArcIterator(Point2F start, Point2F end, double bulge, double dl) {
-  //     radius = Geometry.ConvertBulgeToArc(start, end, bulge, out center);
-  //     theta = Math.Atan2(start.Y - center.Y, start.X - center.X);
-  //     double endTheta = Math.Atan2(end.Y - center.Y, end.X - center.X);
-  //     if (bulge > 0) { // CCW
-  //       if (endTheta < theta) {
-  //         endTheta += 2*Math.PI;
-  //       }
-  //     } else { // CW
-  //       if (endTheta > theta) {
-  //         endTheta -= 2*Math.PI;
-  //       }
-  //     }
-  //     dTheta = Math.Sign(endTheta - theta)*dl/radius;
-  //     nLeft = (int) ((endTheta - theta)/dTheta + 1);
-  //   }
-  //   public bool hasNext() {
-  //     return nLeft > 0;
-  //   }
-  //   public Point2F next() {
-  //     Point2F rv = new Point2F(center.X + radius*Math.Cos(theta),
-  //                              center.Y + radius*Math.Sin(theta));
-  //     --nLeft;
-  //     theta += dTheta;
-  //     return rv;
-  //   }
-  // }
 
   [XmlType("MOPVEngrave"), Serializable]
   public class MOPVEngrave : MOPFromGeometry, IIcon {
@@ -274,32 +195,35 @@ namespace VEngraveForCamBam {
     // UI properties
     [XmlIgnore]
     System.Drawing.Image IIcon.ActiveIconImage {
-      get { return Properties.VCarveResources.VCarveButton; }
+      get { return Properties.VEngraveResources.VEngraveButton; }
     }
 
     [XmlIgnore]
     string IIcon.ActiveIconKey {
-      get { return "VCarveButton"; }
+      get { return "VEngraveButton"; }
     }
 
     [XmlIgnore]
     System.Drawing.Image IIcon.InactiveIconImage {
-      get { return Properties.VCarveResources.VCarveButton; }
+      get { return Properties.VEngraveResources.VEngraveButton; }
     }
 
     [XmlIgnore]
     string IIcon.InactiveIconKey {
-      get { return "VCarveButton"; }
+      get { return "VEngraveButton"; }
     }
 #endregion
 
 #region OperationProperties
     // Operation properties
 #region PathIncrementProperty
-    const double DEFAULT_PATH_INCREMENT = 0.001;
+    const double DEFAULT_PATH_INCREMENT_IN = 0.001;
+    const double DEFAULT_PATH_INCREMENT_THOUS = 1e3*DEFAULT_PATH_INCREMENT_IN;
+    const double DEFAULT_PATH_INCREMENT_M  = 1e-4;
+    const double DEFAULT_PATH_INCREMENT_MM = 1e3*DEFAULT_PATH_INCREMENT_M;
+    const double DEFAULT_PATH_INCREMENT_CM = 1e2*DEFAULT_PATH_INCREMENT_M;
     [DisplayName("Path Step Size"),
      Description("Length of step in path"),
-     DefaultValue(DEFAULT_PATH_INCREMENT),
      Category("Options"), CBAdvancedValue]
     public CBValue<double> PathIncrement {
       set {
@@ -310,7 +234,27 @@ namespace VEngraveForCamBam {
         }
         _pathIncrement = value;
         if (_pathIncrement.IsDefault) {
-          _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT);
+          Units drawingUnits = _CADFile != null ? _CADFile.DrawingUnits
+                                                : Units.Unknown;
+          switch (drawingUnits) {
+            case Units.Centimeters:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_CM);
+              break;
+            case Units.Inches:
+            case Units.Unknown:
+            default:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_IN);
+              break;
+            case Units.Meters:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_M);
+              break;
+            case Units.Millimeters:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_MM);
+              break;
+            case Units.Thousandths:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_THOUS);
+              break;
+          }
           _pathIncrement.Value = _pathIncrement.Cached;
         }
         SetDirty();
@@ -484,7 +428,7 @@ namespace VEngraveForCamBam {
     }
 
     public MOPVEngrave(CADFile file, object[] objects)
-    : base(file, objects) { }
+        : base(file, objects) { }
 
     [XmlIgnore]
     public override string MOPTypeName {
@@ -1039,10 +983,14 @@ namespace VEngraveForCamBam {
             Vector2F dp = Geometry.Multiply(dse.Unit(), adj_dl);
             Point2F current = start;
             while (stepsLeft-- >= 0) { // include both first and last points
-              lastRadius = AnalyzePoint(outline, i, current, curNormal,
-                                        Double.MaxValue, outlines,
-                                        startCornerType, endCornerType,
-                                        toolpath, leftIsInside);
+              double computedRadius = AnalyzePoint(outline, i, current,
+                                                   curNormal, Double.MaxValue,
+                                                   outlines, startCornerType,
+                                                   endCornerType, toolpath,
+                                                   leftIsInside);
+              if (computedRadius >= 0.0) {
+                lastRadius = computedRadius;
+              }
               // Be certain to hit the end exactly.  Overshoot causes issues.
               current = stepsLeft == 0 ? end : Geometry.Add(current, dp);
             }
@@ -1071,10 +1019,14 @@ namespace VEngraveForCamBam {
                 curNormal.Invert();
                 maxRadius = arcRadius;
               }
-              lastRadius = AnalyzePoint(outline, i, current, curNormal,
-                                        maxRadius, outlines,
-                                        startCornerType, endCornerType,
-                                        toolpath, leftIsInside);
+              double computedRadius = AnalyzePoint(outline, i, current,
+                                                   curNormal, maxRadius,
+                                                   outlines, startCornerType,
+                                                   endCornerType, toolpath,
+                                                   leftIsInside);
+              if (computedRadius >= 0.0) {
+                lastRadius = computedRadius;
+              }
               theta += dtheta;
               // Be certain to hit the end exactly.  Overshoot causes issues.
               if (stepsLeft > 0) {
@@ -1141,12 +1093,13 @@ namespace VEngraveForCamBam {
     }
 
     internal double AnalyzePoint(
-      Polyline currentOutline, int currentItem,
-      Point2F current, Vector2F normal, double maxRadius,
-      List<Polyline> outlines,
-      Geometry.CornerType startCornerType,
-      Geometry.CornerType endCornerType,
-      Polyline toolpath, bool leftIsInside) {
+        Polyline currentOutline, int currentItem,
+        Point2F current, Vector2F normal, double maxRadius,
+        List<Polyline> outlines,
+        Geometry.CornerType startCornerType,
+        Geometry.CornerType endCornerType,
+        Polyline toolpath, bool leftIsInside) {
+      bool radiusDetermined = false;
       double radius = maxRadius;
       Polyline selectedPolyline = null;
       int selectedItem = -1;
@@ -1176,11 +1129,17 @@ namespace VEngraveForCamBam {
               current, normal, start, end, bulge);
           }
           if (tangentRadius < radius) {
+            radiusDetermined = true;
             radius = tangentRadius;
             selectedPolyline = outline;
             selectedItem = i;
           }
         }
+      }
+      if (!radiusDetermined) {
+        _log.Log(ERROR, "Unable to determine radius at point {0} normal {1}",
+                 current, normal);
+        return -1;
       }
       Point3F toolpathPoint = new Point3F(
         current.X + radius*normal.X,
