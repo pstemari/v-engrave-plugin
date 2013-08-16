@@ -63,9 +63,9 @@ namespace VEngraveForCamBam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap VEngraveButton {
+        internal static System.Drawing.Bitmap cam_VEngraveButton1 {
             get {
-                object obj = ResourceManager.GetObject("VEngraveButton", resourceCulture);
+                object obj = ResourceManager.GetObject("cam_VEngraveButton1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

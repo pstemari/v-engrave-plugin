@@ -86,7 +86,7 @@ namespace VEngraveForCamBam {
 
       var insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VEngraveResources.VEngraveButton;
+      insertMOPCommand.Image = Properties.VEngraveResources.cam_VEngraveButton1;
       insertMOPCommand.Click += InsertMOP;
 
       for (int i = 0; i < _ui.Menus.mnuMachining.DropDownItems.Count; ++i) {
@@ -100,7 +100,7 @@ namespace VEngraveForCamBam {
 
       insertMOPCommand = insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VEngraveResources.VEngraveButton;
+      insertMOPCommand.Image = Properties.VEngraveResources.cam_VEngraveButton1;
       insertMOPCommand.Click += InsertMOP;
 
       foreach (ToolStripItem item
@@ -159,8 +159,6 @@ namespace VEngraveForCamBam {
         if (partNode.Tag == view.CADFile.ActivePart) {
           partNode.Expand();
           foreach (TreeNode opNode in partNode.Nodes) {
-            _log.Log("Machine op node {0}, text {1}; image key {2}, index {3}",
-                     opNode.Name, opNode.Text, opNode.ImageKey, opNode.ImageIndex);
             if (opNode.Tag == mop) {
               mop.Name = opNode.Text;
               opNode.EnsureVisible();
@@ -195,22 +193,22 @@ namespace VEngraveForCamBam {
     // UI properties
     [XmlIgnore]
     System.Drawing.Image IIcon.ActiveIconImage {
-      get { return Properties.VEngraveResources.VEngraveButton; }
+      get { return Properties.VEngraveResources.cam_VEngraveButton1; }
     }
 
     [XmlIgnore]
     string IIcon.ActiveIconKey {
-      get { return "VEngraveButton"; }
+      get { return "cam_VEngraveButton1"; }
     }
 
     [XmlIgnore]
     System.Drawing.Image IIcon.InactiveIconImage {
-      get { return Properties.VEngraveResources.VEngraveButton; }
+      get { return Properties.VEngraveResources.cam_VEngraveButton1; }
     }
 
     [XmlIgnore]
     string IIcon.InactiveIconKey {
-      get { return "VEngraveButton"; }
+      get { return "cam_VEngraveButton1"; }
     }
 #endregion
 
@@ -458,25 +456,7 @@ namespace VEngraveForCamBam {
         DetermineCuttingOrder(Toolpaths2);
 
         // Used to display the cut width area (optional)
-        //if (ToolDiameter.Cached > 0) {
-        //    Toolpaths2.CalculateCutWidths(ToolDiameter.Cached);
-        //}
-        //Toolpaths2.CalculateCutWidths(0.001 /* dummy value*/);
         Toolpaths2.CutWidths = ComputeCutSurfaces(Toolpaths2.Toolpaths);
-        //_log.log(TRACE, "CutSurfaces:");
-        //foreach (Surface s in Toolpaths2.CutWidths) {
-        //  _log.log(TRACE,
-        //    "  Surface: {0}, nfaces: {1}, npoints: {2}",
-        //    s, s.Faces.Length, s.Points.Count);
-        //  //foreach (TriangleFace face in s.Faces) {
-        //  //  Point3F a = s.Points[face.A];
-        //  //  Point3F b = s.Points[face.B];
-        //  //  Point3F c = s.Points[face.C];
-        //  //  log.log(TRACE,
-        //  //    "  Face: ({0},{1},{2}), ({3},{4},{5}), ({6},{7},{8})",
-        //  //    a.X, a.Y, a.Z, b.X, b.Y, b.Z, c.X, c.Y, c.Z);
-        //  //}
-        //}
 
         // Detect Rapid moves (optional...for display only)
         Toolpaths2.DetectRapids(this, GetDistanceThreshold());
