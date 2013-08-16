@@ -131,11 +131,6 @@ namespace VEngraveForCamBam {
       // copying external assembly objects that have not been serialized.
       new XmlSerializer(typeof(MOPVEngrave))
         .Serialize(new MemoryStream(), new MOPVEngrave());
-
-      var dumpMopTreeCommand = new ToolStripMenuItem();
-      dumpMopTreeCommand.Text = "Dump MOP tree";
-      dumpMopTreeCommand.Click += DumpMOPTree;
-      _ui.Menus.mnuPlugins.DropDownItems.Add(dumpMopTreeCommand);
     }
 
     public static void InitPlugin(CamBamUI ui) {
@@ -144,16 +139,6 @@ namespace VEngraveForCamBam {
 
     private void About(object sender, EventArgs e) {
       ThisApplication.MsgBox("VEngrave CamBam plug-in b0003");
-    }
-
-    private void DumpMOPTree(object sender, EventArgs e) {
-      foreach (TreeNode partNode in CamBamUI.MainUI.ActiveView.DrawingTree.Machining.Nodes) {
-        partNode.Expand();
-        foreach (TreeNode opNode in partNode.Nodes) {
-          _log.Log("Machine op node {0}, text {1}; image key {2}, index {3}",
-                    opNode.Name, opNode.Text, opNode.ImageKey, opNode.ImageIndex);
-        }
-      }
     }
 
     private void InsertMOP(object sender, EventArgs e) {
@@ -471,25 +456,7 @@ namespace VEngraveForCamBam {
         DetermineCuttingOrder(Toolpaths2);
 
         // Used to display the cut width area (optional)
-        //if (ToolDiameter.Cached > 0) {
-        //    Toolpaths2.CalculateCutWidths(ToolDiameter.Cached);
-        //}
-        //Toolpaths2.CalculateCutWidths(0.001 /* dummy value*/);
         Toolpaths2.CutWidths = ComputeCutSurfaces(Toolpaths2.Toolpaths);
-        //_log.log(TRACE, "CutSurfaces:");
-        //foreach (Surface s in Toolpaths2.CutWidths) {
-        //  _log.log(TRACE,
-        //    "  Surface: {0}, nfaces: {1}, npoints: {2}",
-        //    s, s.Faces.Length, s.Points.Count);
-        //  //foreach (TriangleFace face in s.Faces) {
-        //  //  Point3F a = s.Points[face.A];
-        //  //  Point3F b = s.Points[face.B];
-        //  //  Point3F c = s.Points[face.C];
-        //  //  log.log(TRACE,
-        //  //    "  Face: ({0},{1},{2}), ({3},{4},{5}), ({6},{7},{8})",
-        //  //    a.X, a.Y, a.Z, b.X, b.Y, b.Z, c.X, c.Y, c.Z);
-        //  //}
-        //}
 
         // Detect Rapid moves (optional...for display only)
         Toolpaths2.DetectRapids(this, GetDistanceThreshold());
