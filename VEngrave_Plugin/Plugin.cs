@@ -1159,9 +1159,12 @@ namespace VEngraveForCamBam {
     // Compute Z from radius, adjusting radius for MaxDepth if required.
     private double ComputeZFromRadius(ref double radius) {
       double depth = -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle;
-      if (depth > -MaxDepth.Cached) {
+      if (depth < -MaxDepth.Cached) {
+        _log.Log(TRACE, "Adjusting depth, radius = {0}, computed depth = {1}, "
+                 + "MaxDepth = {2}", radius, depth, MaxDepth.Cached);
         radius = MaxDepth.Cached/_cotHalfVAngle + ToolTipDiameter.Cached/2;
         depth = -MaxDepth.Cached;
+        _log.Log(TRACE, "Adjusted radius = {0}, depth = {1}", radius, depth);
       }
       depth += StockSurface.Cached;
       return depth;
