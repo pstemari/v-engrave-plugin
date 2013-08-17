@@ -486,12 +486,7 @@ namespace VEngraveForCamBam {
     internal ToolpathSequence CreateToolpathSequence(ShapeList shapes) {
       ToolpathSequence tseq = new ToolpathSequence(this);
       foreach (ShapeListItem item in shapes) {
-        if (item.Shape is Polyline || item.Shape is CamBam.CAD.Region) {
-          ComputeVEngraveToolpath(tseq, item);
-        } else {
-          _log.Log(ERROR, "I don't know what to do with a {0}",
-                   item.Shape.GetType());
-        }
+        ComputeVEngraveToolpath(tseq, item);
       }
       return tseq;
     }
@@ -1058,7 +1053,8 @@ namespace VEngraveForCamBam {
                  toolpath,
                  outline.Direction,     // ???
                  /* sourcepoint */ Point3F.Undefined,
-                 /* zoffset */ StockSurface.Cached);
+                 // stock surface adustment moved to AnalyzePoint
+                 /* zoffset */ 0);
       }
     }
 
@@ -1087,11 +1083,12 @@ namespace VEngraveForCamBam {
         PolylineItem[] point = outline.Points.ToArray();
         for (int i = 0; i < outline.Points.Count; ++i) {
           if (outline == currentOutline
-              && (startCornerType != Geometry.CornerType.SharpInside
-                  && i == currentOutline.PrevSegment(currentItem)
-                  || i == currentItem
-                  || endCornerType != Geometry.CornerType.SharpInside
-                  && i == currentOutline.NextSegment(currentItem))) {
+              && (i == currentItem
+                  // Skip adjacent segments for outside corners
+                  || (startCornerType == Geometry.CornerType.Outside
+                      && i == currentOutline.PrevSegment(currentItem))
+                  || (endCornerType == Geometry.CornerType.Outside
+                      && i == currentOutline.NextSegment(currentItem)))) {
             continue;
           }
 
@@ -1116,51 +1113,31 @@ namespace VEngraveForCamBam {
           }
         }
       }
+      // Skip points on adjacent segments for smooth corners
+      if (startCornerType == Geometry.CornerType.SmoothInside
+              && selectedItem == currentOutline.PrevSegment(currentItem)
+          || endCornerType == Geometry.CornerType.SmoothInside
+              && selectedItem == currentOutline.NextSegment(currentItem)) {
+        return -1;
+      }
+
       if (!radiusDetermined) {
         _log.Log(ERROR, "Unable to determine radius at point {0} normal {1}",
                  current, normal);
         return -1;
       }
-      Point3F toolpathPoint = new Point3F(
-        current.X + radius*normal.X,
-        current.Y + radius*normal.Y,
-        -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle);
-      //// Verify we didn't overlap adjacent segments when we skipped them.
-      //if (startCornerType != Geometry.CornerType.SharpInside
-      //    || endCornerType != Geometry.CornerType.SharpInside) {
-      //  Vector2F nearestNormal = new Vector2F();
-      //  int nearestSegment = currentItem;
-      //  Point3F nearestPoint = currentOutline.GetNearestPoint(
-      //      toolpathPoint.To2D(), ref nearestNormal, ref nearestSegment);
-      //  double nearestDistance = Point2F.Distance(toolpathPoint.To2D(),
-      //                                            nearestPoint.To2D());
-      //  if (nearestDistance < radius) {
-      //    //if (startCornerType == Geometry.CornerType.SmoothInside
-      //    //    && nearestSegment == currentOutline.PrevSegment(currentItem)) {
-      //    //  // TODO: What?
-      //    //} else if (endCornerType == Geometry.CornerType.SmoothInside
-      //    //    && nearestSegment == currentOutline.NextSegment(currentItem)) {
-      //    //  // TODO: What?
-      //    //} else {
-      //    _log.log(Math.Abs(nearestDistance - radius) > 1e-6 ? WARNING : TRACE,
-      //             "Bad point at {0}, distance was {1} but should have been "
-      //             + "{2}, adjusting.", current, radius, nearestDistance);
-      //      radius = nearestDistance;
-      //      toolpathPoint = new Point3F(
-      //          current.X + radius*normal.X,
-      //          current.Y + radius*normal.Y,
-      //          -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle);
-      //    //}
-      //  }
-      //}
-      // TODO: Refine this to use arc/beziers?
-      // TODO: Adjust for max depth
+      // Constraint depth to MaxDepth and apply stock surface offset
+      double z = ComputeZFromRadius(ref radius);
+      Point3F toolpathPoint = new Point3F(current.X + radius*normal.X,
+                                          current.Y + radius*normal.Y,
+                                          z);
       if (toolpath.Points.Count >= 1
           && Point3F.Distance(toolpath.LastPoint,
                               toolpathPoint) < DBL_EPSILON) {
         // duplicate point, ignore it
         _log.Log(TRACE, "  Duplicate point at {0}, ignoring", toolpathPoint);
       } else {
+        // TODO: Refine this to use arc/beziers?
         if (toolpath.Points.Count >= 2
             && Geometry.PointBetween(
               toolpath.Points[toolpath.Points.Count - 2].Point,
@@ -1177,6 +1154,17 @@ namespace VEngraveForCamBam {
         toolpath.Add(toolpathPoint);
       }
       return radius;
+    }
+
+    // Compute Z from radius, adjusting radius for MaxDepth if required.
+    private double ComputeZFromRadius(ref double radius) {
+      double depth = -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle;
+      if (depth > -MaxDepth.Cached) {
+        radius = MaxDepth.Cached/_cotHalfVAngle + ToolTipDiameter.Cached/2;
+        depth = -MaxDepth.Cached;
+      }
+      depth += StockSurface.Cached;
+      return depth;
     }
   }
 }
