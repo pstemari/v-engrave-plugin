@@ -138,7 +138,7 @@ namespace VEngraveForCamBam {
     }
 
     private void About(object sender, EventArgs e) {
-      ThisApplication.MsgBox("VEngrave CamBam plug-in b0003");
+      ThisApplication.MsgBox("VEngrave CamBam plug-in b0004");
     }
 
     private void InsertMOP(object sender, EventArgs e) {
@@ -255,7 +255,6 @@ namespace VEngraveForCamBam {
           }
           _pathIncrement.Value = _pathIncrement.Cached;
         }
-        SetDirty();
       }
       get { return _pathIncrement; }
     }
@@ -289,7 +288,6 @@ namespace VEngraveForCamBam {
           _maxCornerAngle.SetCache(DEFAULT_MAX_CORNER_ANGLE);
           _maxCornerAngle.Value = _maxCornerAngle.Cached;
         }
-        SetDirty();
       }
       get { return _maxCornerAngle; }
     }
@@ -313,12 +311,16 @@ namespace VEngraveForCamBam {
         }
         _maxDepth = value;
         if (_maxDepth.IsDefault) {
-          _maxDepth.SetState(CBValueStates.Auto);
-          _maxDepth.ClearCache();
+          _maxDepth.SetCache(Double.PositiveInfinity);
+          _maxDepth.Value = _maxDepth.Cached;
         }
-        SetDirty();
       }
-      get { return _maxDepth; }
+      get {
+        if (_maxDepth.IsAuto && !_maxDepth.IsCacheSet) {
+          _maxDepth.SetCache(ComputeAutoMaxDepth());
+        }
+        return _maxDepth;
+      }
     }
     public bool ShouldSerializeMaxDepth() {
       _log.Log(FINEST, "ShouldSerializeMaxDepth(): {0}", !_maxDepth.IsDefault);
@@ -327,6 +329,9 @@ namespace VEngraveForCamBam {
     [XmlElement("MaxDepth")]
     private CBValue<double> _maxDepth;
     private double ComputeAutoMaxDepth() {
+      if (ToolDiameter.Cached <= 0) {
+        return double.PositiveInfinity;
+      }
       return 0.5*(ToolDiameter.Cached - ToolTipDiameter.Cached)
         /Math.Tan(0.5*ToolVAngle.Cached*DEGREES);
     }
@@ -348,7 +353,6 @@ namespace VEngraveForCamBam {
           _toolTipDiameter.SetCache(DEFAULT_TOOL_TIP_DIAMETER);
           _toolTipDiameter.Value = _toolTipDiameter.Cached;
         }
-        SetDirty();
       }
       get { return _toolTipDiameter; }
     }
@@ -378,7 +382,6 @@ namespace VEngraveForCamBam {
           _toolVAngle.Value = _toolVAngle.Cached;
         }
         _cotHalfVAngle = 1.0/Math.Tan(0.5*_toolVAngle.Value*DEGREES);
-        SetDirty();
       }
       get { return _toolVAngle; }
     }
@@ -398,12 +401,16 @@ namespace VEngraveForCamBam {
     public override bool EvaluateAutoCBValue(ICBValue toset, string name) {
       _log.Log(FINEST, "EvaluateAutoValue {0}", name);
       if (name.Equals("MaxDepth")) {
-        toset.SetValue(ComputeAutoMaxDepth());
-        toset.SetState(CBValueStates.Auto);
+        double maxDepth = ComputeAutoMaxDepth();
+        _log.Log(TRACE, "EvaluateAutoCBValue(MaxDepth): {0}", maxDepth);
+        toset.SetCache(maxDepth);
         return true;
       } else {
         return base.EvaluateAutoCBValue(toset, name);
       }
+    }
+    public override void PropertyChanged(string propertyname, object newvalue) {
+      base.PropertyChanged(propertyname, newvalue);
     }
 #endregion
 #endregion
@@ -441,6 +448,7 @@ namespace VEngraveForCamBam {
       if (CADFile != null) {
         CADFile.Modified = true;
       }
+//      ClearCBValueCache(autos_only: true);
     }
 
     protected override void _GenerateToolpathsWorker() {
@@ -520,12 +528,19 @@ namespace VEngraveForCamBam {
       double toolTipRadius = 0.5*ToolTipDiameter.Cached;
       foreach (ToolpathItem tpi in tpil)  {
         Polyline toolpath = (Polyline) tpi.Toolpath.Clone();
+        // Get rid of any initial leadin/leadout points
+        while (toolpath.FirstPoint.Z > StockSurface.Cached) {
+          toolpath.Points.RemoveAt(0);
+        }
+        while (toolpath.LastPoint.Z > StockSurface.Cached) {
+          toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
+        }
         toolpath.CheckForClosed(PathIncrement.Cached);
         _log.Log(DEBUG, "Calculating cut surfaces for toolpath "
                  + "item {0}, point count: {1}, closed: {2}",
                  tpi, toolpath.Points.Count, toolpath.Closed);
-        var exMin = GeomExtremaMin;
-        var exMax = GeomExtremaMax;
+        //var exMin = GeomExtremaMin;
+        //var exMax = GeomExtremaMax;
         toolpath.RemoveDuplicatePoints(0.1*PathIncrement.Cached);
         SurfaceBuilder bob = new SurfaceBuilder();
         bob.setLogger(_log);
@@ -625,14 +640,17 @@ namespace VEngraveForCamBam {
             // segments.
             beyond = toolpath.Points[beyondi].Point;
             outvector = new Vector2F(next.To2D(), beyond.To2D());
-            // TODO: Handle this better
-            if (outvector.Length < DBL_EPSILON) {
-              _log.Log(WARNING, "zero-length segment in toolpath at {0}, "
-                       + "aborting", next);
-              return new List<Surface>();
+            // If we don't have an out vector, don't attempt to miter--typically this
+            // is caused by a vertical lift.
+            if (outvector.Length >= DBL_EPSILON) {
+              nextmiter = Geometry.Bisect(
+                Geometry.Multiply(-1, currstep), outvector);
+            } else {
+              _log.Log(FINE, "zero-length segment in toolpath at {0}, "
+                       + "skipping miter", next);
+              outvector = currstep;
+              nextmiter = currstep.Normal().Unit();
             }
-            nextmiter = Geometry.Bisect(
-              Geometry.Multiply(-1, currstep), outvector);
           }
 
           // If outside normal is on the same side as as the
@@ -1043,7 +1061,18 @@ namespace VEngraveForCamBam {
           start = end;
           adjustedStart = adjustedEnd;
         }
-        toolpath.CheckForClosed(PathIncrement.Cached);
+        // Close path if it loops
+        if (Point3F.Distance(toolpath.Points[0].Point,
+                             toolpath.Points[toolpath.Points.Count - 1].Point)
+            <= PathIncrement.Cached) {
+          toolpath.Add(toolpath.Points[0].Point);
+        }
+        // and add start and end points above surface
+        double zEndpoints = StockSurface.Cached + 10*PathIncrement.Cached;
+        toolpath.InsertSegmentBefore(
+            0, new PolylineItem(toolpath.FirstPoint.To2D().To3D(zEndpoints)));
+        toolpath.Add(toolpath.LastPoint.To2D().To3D(zEndpoints));
+
         _log.Log(DEBUG, "Adding {0} item toolpath for entity {1}",
                  toolpath.Points.Count, outlineID);
         tseq.Add(/* depthIndex */ 0,
@@ -1052,9 +1081,9 @@ namespace VEngraveForCamBam {
                  parentID,
                  toolpath,
                  outline.Direction,     // ???
-                 /* sourcepoint */ Point3F.Undefined,
+                 sourcepoint: Point3F.Undefined,
                  // stock surface adustment moved to AnalyzePoint
-                 /* zoffset */ 0);
+                 zoffset: 0);
       }
     }
 
