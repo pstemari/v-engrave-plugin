@@ -529,10 +529,14 @@ namespace VEngraveForCamBam {
       foreach (ToolpathItem tpi in tpil)  {
         Polyline toolpath = (Polyline) tpi.Toolpath.Clone();
         // Get rid of any initial leadin/leadout points
-        while (toolpath.FirstPoint.Z > StockSurface.Cached) {
+        while (toolpath.FirstPoint.To2D().Equals(
+                   toolpath.Points[toolpath.NextSegment(0)].Point.To2D())) {
           toolpath.Points.RemoveAt(0);
         }
-        while (toolpath.LastPoint.Z > StockSurface.Cached) {
+        while (toolpath.LastPoint.To2D().Equals(
+                   toolpath.Points[
+                       toolpath.PrevSegment(toolpath.Points.Count - 1)]
+                           .Point.To2D())) {
           toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
         }
         toolpath.CheckForClosed(PathIncrement.Cached);
@@ -876,7 +880,7 @@ namespace VEngraveForCamBam {
         outlines.Add((Polyline) item.Shape);
         FollowOutline(tseq, (Polyline) item.Shape, outlines,
                       item.EntityID, parentID: -1,
-                      offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                      offsetIndex: ref offsetIndex, depthIndex: depthIndex,
                       traceInside: true);
       } else if (item.Shape is Region) {
         ComputeRegionToolpaths(tseq, (Region) item.Shape, item.EntityID,
@@ -901,7 +905,7 @@ namespace VEngraveForCamBam {
       List<Polyline> outlines = new List<Polyline>(region.HoleCurves);
       outlines.Add(region.OuterCurve);
       FollowOutline(tseq, region.OuterCurve, outlines, entityID, parentID: -1,
-                    offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                    offsetIndex: ref offsetIndex, depthIndex: depthIndex,
                     traceInside: true);
       int holenum = 0;
       foreach (Polyline phole in region.HoleCurves) {
@@ -909,7 +913,7 @@ namespace VEngraveForCamBam {
                                                        entityID.SubItem1,
                                                        holenum++);
         FollowOutline(tseq, phole, outlines,
-                      offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                      offsetIndex: ref offsetIndex, depthIndex: depthIndex,
                       outlineID: holeid, parentID: entityID.EntityID,
                       traceInside: false);
       }
@@ -917,7 +921,7 @@ namespace VEngraveForCamBam {
 
     internal void FollowOutline(
       ToolpathSequence tseq, Polyline outline, List<Polyline> outlines,
-      EntityIdentifier outlineID, int parentID, int offsetIndex,
+      EntityIdentifier outlineID, int parentID, ref int offsetIndex,
       int depthIndex, bool traceInside) {
       double dl = PathIncrement.Cached;
       _log.Log(DEBUG, "Following polyline {0}, direction: {1}",
@@ -1061,29 +1065,78 @@ namespace VEngraveForCamBam {
           start = end;
           adjustedStart = adjustedEnd;
         }
-        // Close path if it loops
-        if (Point3F.Distance(toolpath.Points[0].Point,
-                             toolpath.Points[toolpath.Points.Count - 1].Point)
-            <= PathIncrement.Cached) {
-          toolpath.Add(toolpath.Points[0].Point);
+        if (toolpath.Points.Count > 0) {
+          // Adjust start and end points if they are above the surface--
+          // this is needed because CamBam won't generate a starting rapid
+          // if the first point is above the surface.
+          while (toolpath.Points.Count >= 2
+              && toolpath.FirstPoint.Z > StockSurface.Cached) {
+            var firstPoint = toolpath.FirstPoint;
+            var secondPoint = toolpath.Points[toolpath.NextSegment(0)].Point;
+            if (secondPoint.Z >= StockSurface.Cached) {
+              _log.Log(DEBUG, "Removing extra point at {0}", firstPoint);
+              toolpath.Points.RemoveAt(0);
+            } else {
+              double fraction = (StockSurface.Cached - firstPoint.Z)
+                                / (secondPoint.Z - firstPoint.Z);
+              var correction = Geometry.Multiply(
+                new Vector3F(firstPoint, secondPoint), fraction);
+              var newFirstPoint = Geometry.Add(firstPoint, correction);
+              _log.Log(DEBUG, "Replacing point at {0} with {1}",
+                       firstPoint, newFirstPoint);
+              toolpath.Points.RemoveAt(0);
+              toolpath.InsertSegmentBefore(0, new PolylineItem(newFirstPoint));
+            }
+          }
+          while (toolpath.Points.Count >= 2
+              && toolpath.LastPoint.Z > StockSurface.Cached) {
+            var firstPoint = toolpath.Points[
+              toolpath.PrevSegment(toolpath.Points.Count - 1)].Point;
+            var secondPoint = toolpath.LastPoint;
+            if (firstPoint.Z >= StockSurface.Cached) {
+              _log.Log(DEBUG, "Removing extra point at {0}", secondPoint);
+              toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
+            } else {
+              double fraction = (StockSurface.Cached - firstPoint.Z)
+                                / (secondPoint.Z - firstPoint.Z);
+              var correction = Geometry.Multiply(
+                new Vector3F(firstPoint, secondPoint), fraction);
+              var newSecondPoint = Geometry.Add(firstPoint, correction);
+              _log.Log(DEBUG, "Replacing point at {0} with {1}",
+                       secondPoint, newSecondPoint);
+              toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
+              toolpath.Add(newSecondPoint);
+            }
+          }
+          // Close path if it loops
+          if (toolpath.Points.Count > 1
+              && Point3F.Distance(
+                  toolpath.Points[0].Point,
+                  toolpath.Points[toolpath.Points.Count - 1].Point)
+              <= PathIncrement.Cached) {
+            toolpath.Add(toolpath.Points[0].Point);
+          }
+          // and add start and end points at surface
+          if (toolpath.FirstPoint.Z < StockSurface.Cached) {
+            toolpath.InsertSegmentBefore(
+                0, new PolylineItem(toolpath.FirstPoint.To2D()
+                                        .To3D(StockSurface.Cached)));
+          }
+          if (toolpath.LastPoint.Z < StockSurface.Cached) {
+            toolpath.Add(toolpath.LastPoint.To2D().To3D(StockSurface.Cached));
+          }
+          _log.Log(DEBUG, "Adding {0} item toolpath for entity {1}",
+                   toolpath.Points.Count, outlineID);
+          tseq.Add(/* depthIndex */ 0,
+                   offsetIndex++,
+                   outlineID,
+                   parentID,
+                   toolpath,
+                   outline.Direction,     // ???
+                   sourcepoint: Point3F.Undefined,
+                   // stock surface adustment moved to AnalyzePoint
+                   zoffset: 0);
         }
-        // and add start and end points above surface
-        double zEndpoints = StockSurface.Cached + 10*PathIncrement.Cached;
-        toolpath.InsertSegmentBefore(
-            0, new PolylineItem(toolpath.FirstPoint.To2D().To3D(zEndpoints)));
-        toolpath.Add(toolpath.LastPoint.To2D().To3D(zEndpoints));
-
-        _log.Log(DEBUG, "Adding {0} item toolpath for entity {1}",
-                 toolpath.Points.Count, outlineID);
-        tseq.Add(/* depthIndex */ 0,
-                 offsetIndex,
-                 outlineID,
-                 parentID,
-                 toolpath,
-                 outline.Direction,     // ???
-                 sourcepoint: Point3F.Undefined,
-                 // stock surface adustment moved to AnalyzePoint
-                 zoffset: 0);
       }
     }
 
@@ -1104,7 +1157,7 @@ namespace VEngraveForCamBam {
         Geometry.CornerType startCornerType,
         Geometry.CornerType endCornerType,
         Polyline toolpath, bool leftIsInside) {
-      bool radiusDetermined = false;
+      bool radiusDetermined = maxRadius < Double.MaxValue;
       double radius = maxRadius;
       Polyline selectedPolyline = null;
       int selectedItem = -1;
@@ -1134,7 +1187,9 @@ namespace VEngraveForCamBam {
             tangentRadius = Geometry.RadiusToArc(
               current, normal, start, end, bulge);
           }
-          if (tangentRadius < radius) {
+          // Note--in a circle, maxRadius will equal radius,
+          // but we do want to generate a point.
+          if (tangentRadius <= radius) {
             radiusDetermined = true;
             radius = tangentRadius;
             selectedPolyline = outline;
