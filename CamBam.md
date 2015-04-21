@@ -1,0 +1,1 @@
+CamBam is a commercial application to create CAM files (gcode) from CAD source files or its own internal geometry editor. See the [CamBam website](http://www.cambam.info/) for more information.
