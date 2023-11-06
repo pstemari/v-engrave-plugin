@@ -1,12 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VEngrave_Plugin", "VEngrave_Plugin\VEngrave_Plugin.csproj", "{D150D03C-124F-436D-97BA-6F660851956A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VEngrave_UnitTests", "VEngrave_UnitTests\VEngrave_UnitTests.csproj", "{0D9AF85D-A78C-4B56-9A40-8C801936558B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D150D03C-124F-436D-97BA-6F660851956A} = {D150D03C-124F-436D-97BA-6F660851956A}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,12 +19,6 @@ Global
 		{D150D03C-124F-436D-97BA-6F660851956A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D150D03C-124F-436D-97BA-6F660851956A}.Release|x86.ActiveCfg = Release|x86
 		{D150D03C-124F-436D-97BA-6F660851956A}.Release|x86.Build.0 = Release|x86
-		{0D9AF85D-A78C-4B56-9A40-8C801936558B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D9AF85D-A78C-4B56-9A40-8C801936558B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D9AF85D-A78C-4B56-9A40-8C801936558B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0D9AF85D-A78C-4B56-9A40-8C801936558B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D9AF85D-A78C-4B56-9A40-8C801936558B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0D9AF85D-A78C-4B56-9A40-8C801936558B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

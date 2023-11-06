@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ 
+ Modified to version b0006 on 2/26/2014 by Lloyd E. Sponenburgh, to fix
+ the shaded icon problem in CamBam when the MOp is disabled.
+ Look for the "modified" comments
  */
 
 using System;
@@ -86,8 +90,10 @@ namespace VEngraveForCamBam {
 
       var insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VCarveResources.VCarveButton;
-      insertMOPCommand.Click += InsertMOP;
+ // modified 2/26/2014 by L.E.S. for the "ON" image fname1.img
+        insertMOPCommand.Image = Properties.VEngraveResources.cam_VEngraveButton1;
+ //  end modification 2/16/2014
+        insertMOPCommand.Click += InsertMOP;
 
       for (int i = 0; i < _ui.Menus.mnuMachining.DropDownItems.Count; ++i) {
         var item = _ui.Menus.mnuMachining.DropDownItems[i];
@@ -100,7 +106,9 @@ namespace VEngraveForCamBam {
 
       insertMOPCommand = insertMOPCommand = new ToolStripMenuItem();
       insertMOPCommand.Text = "V-Engrave";
-      insertMOPCommand.Image = Properties.VCarveResources.VCarveButton;
+// modified 2/26/2014 by L.E.S. for the "ON" image fname1.img
+      insertMOPCommand.Image = Properties.VEngraveResources.cam_VEngraveButton1;
+//  end modification 2/16/2014
       insertMOPCommand.Click += InsertMOP;
 
       foreach (ToolStripItem item
@@ -138,25 +146,9 @@ namespace VEngraveForCamBam {
     }
 
     private void About(object sender, EventArgs e) {
-      ThisApplication.MsgBox("VEngrave CamBam plug-in b0003");
+// modified 2/26/2014 by L.E.S. version number
+      ThisApplication.MsgBox("VEngrave CamBam plug-in b0006");
     }
-
-    //private void _TestXMLCommand(object sender, EventArgs unused) {
-    //  try {
-    //    ClassHelper.SerializeToXmlFile(
-    //      CamBamUI.MainUI.ActiveView.CADFile,
-    //      @"C:\Users\Paul J. Ste. Marie\Documents\CADCAM\TestXMLSerialization.xml");
-    //    //CBXmlSerializer serializer = new CBXmlSerializer(typeof(CADFile));
-    //    //TextWriter writer = new StreamWriter(
-    //    //        @"C:\Users\Paul J. Ste. Marie\Documents\CADCAM\TestXMLSerialization.xml");
-    //    //serializer.WriteXml(new System.Xml.XmlTextWriter(writer),
-    //    //    CamBamUI.MainUI.ActiveView.CADFile);
-    //  } catch (InvalidOperationException e) {
-    //    ThisApplication.AddLogMessage(
-    //      "Exception {0} when serializing document, inner exception: {1}",
-    //      e, e.InnerException);
-    //  }
-    //}
 
     private void InsertMOP(object sender, EventArgs e) {
       ICADView view = CamBamUI.MainUI.ActiveView;
@@ -186,75 +178,11 @@ namespace VEngraveForCamBam {
         }
       }
 
-      // _ui.InsertMOP ?
       foreach (var smop in CamBamUI.MainUI.CADFileTree.SelectedMOPs) {
         ThisApplication.AddLogMessage("SelectedMOPs: {0}", smop.Name);
       }
     }
   }
-
-  // public interface IPathIterator {
-  //   bool hasNext();
-  //   Point2F next();
-  // }
-
-  // public class LineSegmentIterator : IPathIterator {
-  //   private Point2F current;
-  //   private int nLeft;
-  //   private Vector2F dse;
-  //   public LineSegmentIterator(Point2F start, Point2F end, double dl) {
-  //     current = new Point2F(start.X, start.Y);
-  //     dse = new Vector2F(start, end);
-  //     double length = dse.Length;
-  //     nLeft = (int) (length/dl) + 1;
-  //     if (nLeft < 2) {
-  //       nLeft = 2;
-  //     }
-  //     dse.X /= (nLeft - 1);
-  //     dse.Y /= (nLeft - 1);
-  //   }
-  //   public bool hasNext() {
-  //     return nLeft > 0;
-  //   }
-  //   public Point2F next() {
-  //     Point2F rv = current;
-  //     current = new Point2F(rv.X + dse.X, rv.Y + dse.Y);
-  //     --nLeft;
-  //     return rv;
-  //   }
-  // }
-
-  // public class ArcIterator : IPathIterator {
-  //   private Point2F center;
-  //   private int nLeft;
-  //   private double radius, theta, dTheta;
-  //   public ArcIterator(Point2F start, Point2F end, double bulge, double dl) {
-  //     radius = Geometry.ConvertBulgeToArc(start, end, bulge, out center);
-  //     theta = Math.Atan2(start.Y - center.Y, start.X - center.X);
-  //     double endTheta = Math.Atan2(end.Y - center.Y, end.X - center.X);
-  //     if (bulge > 0) { // CCW
-  //       if (endTheta < theta) {
-  //         endTheta += 2*Math.PI;
-  //       }
-  //     } else { // CW
-  //       if (endTheta > theta) {
-  //         endTheta -= 2*Math.PI;
-  //       }
-  //     }
-  //     dTheta = Math.Sign(endTheta - theta)*dl/radius;
-  //     nLeft = (int) ((endTheta - theta)/dTheta + 1);
-  //   }
-  //   public bool hasNext() {
-  //     return nLeft > 0;
-  //   }
-  //   public Point2F next() {
-  //     Point2F rv = new Point2F(center.X + radius*Math.Cos(theta),
-  //                              center.Y + radius*Math.Sin(theta));
-  //     --nLeft;
-  //     theta += dTheta;
-  //     return rv;
-  //   }
-  // }
 
   [XmlType("MOPVEngrave"), Serializable]
   public class MOPVEngrave : MOPFromGeometry, IIcon {
@@ -274,32 +202,43 @@ namespace VEngraveForCamBam {
     // UI properties
     [XmlIgnore]
     System.Drawing.Image IIcon.ActiveIconImage {
-      get { return Properties.VCarveResources.VCarveButton; }
+// modified 2/26/2014 by L.E.S. for the "ON" image fname1.img
+      get { return Properties.VEngraveResources.cam_VEngraveButton1; }
+// end 2/26/2014 mod
     }
 
     [XmlIgnore]
     string IIcon.ActiveIconKey {
-      get { return "VCarveButton"; }
+// modified 2/26/2014 by L.E.S. for the "ON" image fname1.img
+    get { return "cam_VEngraveButton1"; }
+// end mod 2/26/2014
     }
 
     [XmlIgnore]
     System.Drawing.Image IIcon.InactiveIconImage {
-      get { return Properties.VCarveResources.VCarveButton; }
+// modified 2/26/2014 by L.E.S. for the "OFF" image fname0.img
+      get { return Properties.VEngraveResources.cam_VEngraveButton0; }
+// end mod 2/26/2014
     }
 
     [XmlIgnore]
     string IIcon.InactiveIconKey {
-      get { return "VCarveButton"; }
+// modified 2/26/2014 by L.E.S. for the "OFF" image fname1.img
+      get { return "cam_VEngraveButton0"; }
+// end mod 2/26/2014
     }
 #endregion
 
 #region OperationProperties
     // Operation properties
 #region PathIncrementProperty
-    const double DEFAULT_PATH_INCREMENT = 0.001;
+    const double DEFAULT_PATH_INCREMENT_IN = 0.001;
+    const double DEFAULT_PATH_INCREMENT_THOUS = 1e3*DEFAULT_PATH_INCREMENT_IN;
+    const double DEFAULT_PATH_INCREMENT_M  = 1e-4;
+    const double DEFAULT_PATH_INCREMENT_MM = 1e3*DEFAULT_PATH_INCREMENT_M;
+    const double DEFAULT_PATH_INCREMENT_CM = 1e2*DEFAULT_PATH_INCREMENT_M;
     [DisplayName("Path Step Size"),
      Description("Length of step in path"),
-     DefaultValue(DEFAULT_PATH_INCREMENT),
      Category("Options"), CBAdvancedValue]
     public CBValue<double> PathIncrement {
       set {
@@ -310,10 +249,29 @@ namespace VEngraveForCamBam {
         }
         _pathIncrement = value;
         if (_pathIncrement.IsDefault) {
-          _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT);
+          Units drawingUnits = _CADFile != null ? _CADFile.DrawingUnits
+                                                : Units.Unknown;
+          switch (drawingUnits) {
+            case Units.Centimeters:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_CM);
+              break;
+            case Units.Inches:
+            case Units.Unknown:
+            default:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_IN);
+              break;
+            case Units.Meters:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_M);
+              break;
+            case Units.Millimeters:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_MM);
+              break;
+            case Units.Thousandths:
+              _pathIncrement.SetCache(DEFAULT_PATH_INCREMENT_THOUS);
+              break;
+          }
           _pathIncrement.Value = _pathIncrement.Cached;
         }
-        SetDirty();
       }
       get { return _pathIncrement; }
     }
@@ -347,7 +305,6 @@ namespace VEngraveForCamBam {
           _maxCornerAngle.SetCache(DEFAULT_MAX_CORNER_ANGLE);
           _maxCornerAngle.Value = _maxCornerAngle.Cached;
         }
-        SetDirty();
       }
       get { return _maxCornerAngle; }
     }
@@ -371,12 +328,16 @@ namespace VEngraveForCamBam {
         }
         _maxDepth = value;
         if (_maxDepth.IsDefault) {
-          _maxDepth.SetState(CBValueStates.Auto);
-          _maxDepth.ClearCache();
+          _maxDepth.SetCache(Double.PositiveInfinity);
+          _maxDepth.Value = _maxDepth.Cached;
         }
-        SetDirty();
       }
-      get { return _maxDepth; }
+      get {
+        if (_maxDepth.IsAuto && !_maxDepth.IsCacheSet) {
+          _maxDepth.SetCache(ComputeAutoMaxDepth());
+        }
+        return _maxDepth;
+      }
     }
     public bool ShouldSerializeMaxDepth() {
       _log.Log(FINEST, "ShouldSerializeMaxDepth(): {0}", !_maxDepth.IsDefault);
@@ -385,6 +346,9 @@ namespace VEngraveForCamBam {
     [XmlElement("MaxDepth")]
     private CBValue<double> _maxDepth;
     private double ComputeAutoMaxDepth() {
+      if (ToolDiameter.Cached <= 0) {
+        return double.PositiveInfinity;
+      }
       return 0.5*(ToolDiameter.Cached - ToolTipDiameter.Cached)
         /Math.Tan(0.5*ToolVAngle.Cached*DEGREES);
     }
@@ -406,7 +370,6 @@ namespace VEngraveForCamBam {
           _toolTipDiameter.SetCache(DEFAULT_TOOL_TIP_DIAMETER);
           _toolTipDiameter.Value = _toolTipDiameter.Cached;
         }
-        SetDirty();
       }
       get { return _toolTipDiameter; }
     }
@@ -436,7 +399,6 @@ namespace VEngraveForCamBam {
           _toolVAngle.Value = _toolVAngle.Cached;
         }
         _cotHalfVAngle = 1.0/Math.Tan(0.5*_toolVAngle.Value*DEGREES);
-        SetDirty();
       }
       get { return _toolVAngle; }
     }
@@ -456,12 +418,16 @@ namespace VEngraveForCamBam {
     public override bool EvaluateAutoCBValue(ICBValue toset, string name) {
       _log.Log(FINEST, "EvaluateAutoValue {0}", name);
       if (name.Equals("MaxDepth")) {
-        toset.SetValue(ComputeAutoMaxDepth());
-        toset.SetState(CBValueStates.Auto);
+        double maxDepth = ComputeAutoMaxDepth();
+        _log.Log(TRACE, "EvaluateAutoCBValue(MaxDepth): {0}", maxDepth);
+        toset.SetCache(maxDepth);
         return true;
       } else {
         return base.EvaluateAutoCBValue(toset, name);
       }
+    }
+    public override void PropertyChanged(string propertyname, object newvalue) {
+      base.PropertyChanged(propertyname, newvalue);
     }
 #endregion
 #endregion
@@ -484,7 +450,7 @@ namespace VEngraveForCamBam {
     }
 
     public MOPVEngrave(CADFile file, object[] objects)
-    : base(file, objects) { }
+        : base(file, objects) { }
 
     [XmlIgnore]
     public override string MOPTypeName {
@@ -499,6 +465,7 @@ namespace VEngraveForCamBam {
       if (CADFile != null) {
         CADFile.Modified = true;
       }
+//      ClearCBValueCache(autos_only: true);
     }
 
     protected override void _GenerateToolpathsWorker() {
@@ -514,25 +481,7 @@ namespace VEngraveForCamBam {
         DetermineCuttingOrder(Toolpaths2);
 
         // Used to display the cut width area (optional)
-        //if (ToolDiameter.Cached > 0) {
-        //    Toolpaths2.CalculateCutWidths(ToolDiameter.Cached);
-        //}
-        //Toolpaths2.CalculateCutWidths(0.001 /* dummy value*/);
         Toolpaths2.CutWidths = ComputeCutSurfaces(Toolpaths2.Toolpaths);
-        //_log.log(TRACE, "CutSurfaces:");
-        //foreach (Surface s in Toolpaths2.CutWidths) {
-        //  _log.log(TRACE,
-        //    "  Surface: {0}, nfaces: {1}, npoints: {2}",
-        //    s, s.Faces.Length, s.Points.Count);
-        //  //foreach (TriangleFace face in s.Faces) {
-        //  //  Point3F a = s.Points[face.A];
-        //  //  Point3F b = s.Points[face.B];
-        //  //  Point3F c = s.Points[face.C];
-        //  //  log.log(TRACE,
-        //  //    "  Face: ({0},{1},{2}), ({3},{4},{5}), ({6},{7},{8})",
-        //  //    a.X, a.Y, a.Z, b.X, b.Y, b.Z, c.X, c.Y, c.Z);
-        //  //}
-        //}
 
         // Detect Rapid moves (optional...for display only)
         Toolpaths2.DetectRapids(this, GetDistanceThreshold());
@@ -562,12 +511,7 @@ namespace VEngraveForCamBam {
     internal ToolpathSequence CreateToolpathSequence(ShapeList shapes) {
       ToolpathSequence tseq = new ToolpathSequence(this);
       foreach (ShapeListItem item in shapes) {
-        if (item.Shape is Polyline || item.Shape is CamBam.CAD.Region) {
-          ComputeVEngraveToolpath(tseq, item);
-        } else {
-          _log.Log(ERROR, "I don't know what to do with a {0}",
-                   item.Shape.GetType());
-        }
+        ComputeVEngraveToolpath(tseq, item);
       }
       return tseq;
     }
@@ -595,216 +539,265 @@ namespace VEngraveForCamBam {
       }
     }
 
-    internal List<Surface> ComputeCutSurfaces(List<ToolpathItem> tpil) {
-      List<Surface> cutsurfaces = new List<Surface>();
-      double tanHalfVAngle = Math.Tan(0.5*ToolVAngle.Cached*DEGREES);
-      double toolTipRadius = 0.5*ToolTipDiameter.Cached;
-      foreach (ToolpathItem tpi in tpil)  {
-        Polyline toolpath = (Polyline) tpi.Toolpath.Clone();
-        toolpath.CheckForClosed(PathIncrement.Cached);
-        _log.Log(DEBUG, "Calculating cut surfaces for toolpath "
-                 + "item {0}, point count: {1}, closed: {2}",
-                 tpi, toolpath.Points.Count, toolpath.Closed);
-        var exMin = GeomExtremaMin;
-        var exMax = GeomExtremaMax;
-        toolpath.RemoveDuplicatePoints(0.1*PathIncrement.Cached);
-        SurfaceBuilder bob = new SurfaceBuilder();
-        bob.setLogger(_log);
-        // faces should have the front side pointing up
-        bob.Front = new Vector3F(0, 0, 1);
-
-        double startCutRadius = toolTipRadius
-          + (StockSurface.Cached
-             - toolpath.Points[0].Point.Z)*tanHalfVAngle;
-        Point3F current = toolpath.Points[0].Point;
-
-        // Set up variables that carry over from one line segment
-        // to the next
-        Point3F next = toolpath.Points[toolpath.NextSegment(0)].Point;
-        Vector2F currstep = new Vector2F(current.To2D(), next.To2D());
-        int beyondi = toolpath.NextSegment(toolpath.NextSegment(0));
-        Vector2F invector, currmiter;
-        Point3F startBottomOutsideStart, startTopOutsideStart;
-        if (!toolpath.Closed) {
-          _log.Log(TRACE, "Adding starting endcap to toolpath item {0}", tpi);
-          ComputeCutEndcap(current, currstep, bob);
-          invector = currstep;
-          currmiter = currstep.Normal().Unit();
-          startBottomOutsideStart = startTopOutsideStart = Point3F.Undefined;
-        } else {
-          invector = new Vector2F(
-            toolpath.Points[toolpath.PrevSegment(0)].Point.To2D(),
-            current.To2D());
-          currmiter = Geometry.Bisect(
-            Geometry.Multiply(-1, invector), currstep);
-          startBottomOutsideStart = toolTipRadius < DBL_EPSILON
-            ? current : Geometry.Add(current,
-                                     Geometry.Multiply(-toolTipRadius,
-                                                       currmiter.To3D()));
-          startTopOutsideStart = Geometry.Add(
-            current.To2D(), Geometry.Multiply(-startCutRadius,
-                                              currmiter))
-            .To3D(StockSurface.Cached);
-        }
-
-        Point3F startBottomInside = toolTipRadius < DBL_EPSILON
-          ? current : Geometry.Add(current,
-                                   Geometry.Multiply(toolTipRadius,
-                                                     currmiter.To3D()));
-        Point3F startTopInside = Geometry.Add(
-          current.To2D(),
-          Geometry.Multiply(startCutRadius,
-                            currmiter)).To3D(StockSurface.Cached);
-
-        for (int i = 0; i < toolpath.NumSegments; ++i) {
-          _log.Log(TRACE, "  Generating cut surfaces for toolpath item {0}"
-                   + " segment {1}", tpi, i);
-          // If outside normal is on the same side as as the
-          // miter vector flip it
-          Vector2F outsideNormal = currstep.Normal().Unit();
-          if (Math.Sign(Vector2F.Determinant(currstep, outsideNormal))
-              == Math.Sign(Vector2F.Determinant(currstep, currmiter))) {
-            outsideNormal.Invert();
-          }
-
-          // Compute initial bend for this segment
-          Point3F startBottomOutsideEnd = Geometry.Add(
-            current,
-            Geometry.Multiply(toolTipRadius, outsideNormal.To3D()));
-          Point3F startTopOutsideEnd
-            = Geometry.Add(current.To2D(),
-                           Geometry.Multiply(startCutRadius,
-                                             outsideNormal)).To3D(
-                                               StockSurface.Cached);
-
-          // Initial "pie wedge".
-          if (!startTopOutsideStart.IsUndefined
-              && !startBottomOutsideStart.IsUndefined
-              // Check for an actual bend that we need to join together
-              && Point3F.Distance(startTopOutsideStart,
-                                  startTopOutsideEnd) >= DBL_EPSILON)  {
-            ComputeCutPartialCone(current.To2D(), startBottomInside,
-                                  startTopOutsideStart, startBottomOutsideStart,
-                                  startTopOutsideEnd, startBottomOutsideEnd,
-                                  Vector2F.Determinant(currstep, currmiter),
-                                  bob);
-          }
-
-          // Compute main body of this segment
-          double endCutRadius = toolTipRadius
-            + (StockSurface.Cached - next.Z)*tanHalfVAngle;
-          Vector2F nextmiter, outvector;
-          Point3F beyond;
-          if (beyondi < 0) {
-            beyond = Point3F.Undefined;
-            outvector = currstep;
-            nextmiter = currstep.Normal().Unit();
-          } else {
-            // This assumes no arcs in the toolpath, but
-            // currently I don't attempt to optimize the
-            // toolpath to use arcs or combine co-linear
-            // segments.
-            beyond = toolpath.Points[beyondi].Point;
-            outvector = new Vector2F(next.To2D(), beyond.To2D());
-            // TODO: Handle this better
-            if (outvector.Length < DBL_EPSILON) {
-              _log.Log(WARNING, "zero-length segment in toolpath at {0}, "
-                       + "aborting", next);
-              return new List<Surface>();
+    internal List<Surface> ComputeCutSurfaces(List<ToolpathItem> tpil)
+    {
+        List<Surface> cutsurfaces = new List<Surface>();
+        double tanHalfVAngle = Math.Tan(0.5 * ToolVAngle.Cached * DEGREES);
+        double toolTipRadius = 0.5 * ToolTipDiameter.Cached;
+        foreach (ToolpathItem tpi in tpil)
+        {
+            Polyline toolpath = (Polyline)tpi.Toolpath.Clone();
+            // Get rid of any initial leadin/leadout points
+            //<<<<<<< HEAD
+            while (toolpath.FirstPoint.Z > StockSurface.Cached)
+            {
+                toolpath.Points.RemoveAt(0);
             }
-            nextmiter = Geometry.Bisect(
-              Geometry.Multiply(-1, currstep), outvector);
-          }
+            while (toolpath.LastPoint.Z > StockSurface.Cached)
+            {
+                //=======
+                while (toolpath.FirstPoint.To2D().Equals(
+                           toolpath.Points[toolpath.NextSegment(0)].Point.To2D()))
+                {
+                    toolpath.Points.RemoveAt(0);
+                }
+                while (toolpath.LastPoint.To2D().Equals(
+                           toolpath.Points[
+                               toolpath.PrevSegment(toolpath.Points.Count - 1)]
+                                   .Point.To2D()))
+                {
+                    //>>>>>>> a3d025b631f07b7a3b20ed03d7299b3a9ee5ec01
+                    toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
+                }
+                toolpath.CheckForClosed(PathIncrement.Cached);
+                _log.Log(DEBUG, "Calculating cut surfaces for toolpath "
+                         + "item {0}, point count: {1}, closed: {2}",
+                         tpi, toolpath.Points.Count, toolpath.Closed);
+                //var exMin = GeomExtremaMin;
+                //var exMax = GeomExtremaMax;
+                toolpath.RemoveDuplicatePoints(0.1 * PathIncrement.Cached);
+                SurfaceBuilder bob = new SurfaceBuilder();
+                bob.setLogger(_log);
+                // faces should have the front side pointing up
+                bob.Front = new Vector3F(0, 0, 1);
 
-          // If outside normal is on the same side as as the
-          // miter vector flip it and exchange the sides of
-          // the points we're joining with. This handles the
-          // zig-zag case.
-          if (Math.Sign(Vector2F.Determinant(outvector, outsideNormal))
-              == Math.Sign(Vector2F.Determinant(outvector, nextmiter))) {
-            outsideNormal.Invert();
-            Point3F temp = startTopOutsideEnd;
-            startTopOutsideEnd = startTopInside;
-            startTopInside = temp;
-            temp = startBottomOutsideEnd;
-            startBottomOutsideEnd = startBottomInside;
-            startBottomInside = temp;
-          }
+                double startCutRadius = toolTipRadius
+                  + (StockSurface.Cached
+                     - toolpath.Points[0].Point.Z) * tanHalfVAngle;
+                Point3F current = toolpath.Points[0].Point;
 
-          Point3F endBottomInside = Geometry.Add(
-            next, Geometry.Multiply(toolTipRadius, nextmiter.To3D()));
-          Point3F endTopInside = Geometry.Add(
-            next.To2D(), Geometry.Multiply(endCutRadius, nextmiter))
-            .To3D(StockSurface.Cached);
-          Point3F endBottomOutsideStart = Geometry.Add(
-            next, Geometry.Multiply(toolTipRadius, outsideNormal.To3D()));
-          Point3F endTopOutsideStart = Geometry.Add(
-            next.To2D(), Geometry.Multiply(endCutRadius, outsideNormal))
-            .To3D(StockSurface.Cached);
+                // Set up variables that carry over from one line segment
+                // to the next
+                Point3F next = toolpath.Points[toolpath.NextSegment(0)].Point;
+                Vector2F currstep = new Vector2F(current.To2D(), next.To2D());
+                int beyondi = toolpath.NextSegment(toolpath.NextSegment(0));
+                Vector2F invector, currmiter;
+                Point3F startBottomOutsideStart, startTopOutsideStart;
+                if (!toolpath.Closed)
+                {
+                    _log.Log(TRACE, "Adding starting endcap to toolpath item {0}", tpi);
+                    ComputeCutEndcap(current, currstep, bob);
+                    invector = currstep;
+                    currmiter = currstep.Normal().Unit();
+                    startBottomOutsideStart = startTopOutsideStart = Point3F.Undefined;
+                }
+                else
+                {
+                    invector = new Vector2F(
+                      toolpath.Points[toolpath.PrevSegment(0)].Point.To2D(),
+                      current.To2D());
+                    currmiter = Geometry.Bisect(
+                      Geometry.Multiply(-1, invector), currstep);
+                    startBottomOutsideStart = toolTipRadius < DBL_EPSILON
+                      ? current : Geometry.Add(current,
+                                               Geometry.Multiply(-toolTipRadius,
+                                                                 currmiter.To3D()));
+                    startTopOutsideStart = Geometry.Add(
+                      current.To2D(), Geometry.Multiply(-startCutRadius,
+                                                        currmiter))
+                      .To3D(StockSurface.Cached);
+                }
 
-          // Note: Let the surface builder suppress degenerate facets
-          if (toolTipRadius < DBL_EPSILON) {  // sharp v-groove
-            bob.AddFacets(startTopOutsideEnd, current, next,
-                          endTopOutsideStart);
-            bob.AddFacets(startTopInside, current, next,
-                          endTopInside);
-          } else {                        // flat-bottomed v-groove
-            bob.AddFacets(startTopOutsideEnd, startBottomOutsideEnd,
-                          endBottomOutsideStart, endTopOutsideStart);
-            bob.AddFacets(startBottomInside, startBottomOutsideEnd,
-                          endBottomOutsideStart, endBottomInside);
-            bob.AddFacets(startTopInside, startBottomInside,
-                          endBottomInside, endTopInside);
-          }
+                Point3F startBottomInside = toolTipRadius < DBL_EPSILON
+                  ? current : Geometry.Add(current,
+                                           Geometry.Multiply(toolTipRadius,
+                                                             currmiter.To3D()));
+                Point3F startTopInside = Geometry.Add(
+                  current.To2D(),
+                  Geometry.Multiply(startCutRadius,
+                                    currmiter)).To3D(StockSurface.Cached);
 
-          // Compute ending pie wedge
-          Point3F endBottomOutsideEnd, endTopOutsideEnd;
-          var outDet = Vector2F.Determinant(currstep, outvector);
-          if (beyond.IsUndefined || Math.Abs(outDet) < DBL_EPSILON) {
-            endBottomOutsideEnd = endTopOutsideEnd
-              = Point3F.Undefined;
-          } else {
-            endBottomOutsideEnd = Geometry.Add(
-              next, Geometry.Multiply(-toolTipRadius,
-                                      nextmiter.To3D()));
-            endTopOutsideEnd = Geometry.Add(
-              next.To2D(), Geometry.Multiply(-endCutRadius,
-                                             nextmiter))
-              .To3D(StockSurface.Cached);
-            // Check for an actual bend that we need to join together
-            if (Point3F.Distance(endTopOutsideStart,
-                                 endTopOutsideEnd) > DBL_EPSILON) {
-              ComputeCutPartialCone(next.To2D(), endBottomInside,
-                                    endTopOutsideStart, endBottomOutsideStart,
-                                    endTopOutsideEnd, endBottomOutsideEnd,
-                                    outDet, bob);
+                for (int i = 0; i < toolpath.NumSegments; ++i)
+                {
+                    _log.Log(TRACE, "  Generating cut surfaces for toolpath item {0}"
+                             + " segment {1}", tpi, i);
+                    // If outside normal is on the same side as as the
+                    // miter vector flip it
+                    Vector2F outsideNormal = currstep.Normal().Unit();
+                    if (Math.Sign(Vector2F.Determinant(currstep, outsideNormal))
+                        == Math.Sign(Vector2F.Determinant(currstep, currmiter)))
+                    {
+                        outsideNormal.Invert();
+                    }
+
+                    // Compute initial bend for this segment
+                    Point3F startBottomOutsideEnd = Geometry.Add(
+                      current,
+                      Geometry.Multiply(toolTipRadius, outsideNormal.To3D()));
+                    Point3F startTopOutsideEnd
+                      = Geometry.Add(current.To2D(),
+                                     Geometry.Multiply(startCutRadius,
+                                                       outsideNormal)).To3D(
+                                                         StockSurface.Cached);
+
+                    // Initial "pie wedge".
+                    if (!startTopOutsideStart.IsUndefined
+                        && !startBottomOutsideStart.IsUndefined
+                        // Check for an actual bend that we need to join together
+                        && Point3F.Distance(startTopOutsideStart,
+                                            startTopOutsideEnd) >= DBL_EPSILON)
+                    {
+                        ComputeCutPartialCone(current.To2D(), startBottomInside,
+                                              startTopOutsideStart, startBottomOutsideStart,
+                                              startTopOutsideEnd, startBottomOutsideEnd,
+                                              Vector2F.Determinant(currstep, currmiter),
+                                              bob);
+                    }
+
+                    // Compute main body of this segment
+                    double endCutRadius = toolTipRadius
+                      + (StockSurface.Cached - next.Z) * tanHalfVAngle;
+                    Vector2F nextmiter, outvector;
+                    Point3F beyond;
+                    if (beyondi < 0)
+                    {
+                        beyond = Point3F.Undefined;
+                        outvector = currstep;
+                        nextmiter = currstep.Normal().Unit();
+                    }
+                    else
+                    {
+                        // This assumes no arcs in the toolpath, but
+                        // currently I don't attempt to optimize the
+                        // toolpath to use arcs or combine co-linear
+                        // segments.
+                        beyond = toolpath.Points[beyondi].Point;
+                        outvector = new Vector2F(next.To2D(), beyond.To2D());
+                        // If we don't have an out vector, don't attempt to miter--typically this
+                        // is caused by a vertical lift.
+                        if (outvector.Length >= DBL_EPSILON)
+                        {
+                            nextmiter = Geometry.Bisect(
+                              Geometry.Multiply(-1, currstep), outvector);
+                        }
+                        else
+                        {
+                            _log.Log(FINE, "zero-length segment in toolpath at {0}, "
+                                     + "skipping miter", next);
+                            outvector = currstep;
+                            nextmiter = currstep.Normal().Unit();
+                        }
+                    }
+
+                    // If outside normal is on the same side as as the
+                    // miter vector flip it and exchange the sides of
+                    // the points we're joining with. This handles the
+                    // zig-zag case.
+                    if (Math.Sign(Vector2F.Determinant(outvector, outsideNormal))
+                        == Math.Sign(Vector2F.Determinant(outvector, nextmiter)))
+                    {
+                        outsideNormal.Invert();
+                        Point3F temp = startTopOutsideEnd;
+                        startTopOutsideEnd = startTopInside;
+                        startTopInside = temp;
+                        temp = startBottomOutsideEnd;
+                        startBottomOutsideEnd = startBottomInside;
+                        startBottomInside = temp;
+                    }
+
+                    Point3F endBottomInside = Geometry.Add(
+                      next, Geometry.Multiply(toolTipRadius, nextmiter.To3D()));
+                    Point3F endTopInside = Geometry.Add(
+                      next.To2D(), Geometry.Multiply(endCutRadius, nextmiter))
+                      .To3D(StockSurface.Cached);
+                    Point3F endBottomOutsideStart = Geometry.Add(
+                      next, Geometry.Multiply(toolTipRadius, outsideNormal.To3D()));
+                    Point3F endTopOutsideStart = Geometry.Add(
+                      next.To2D(), Geometry.Multiply(endCutRadius, outsideNormal))
+                      .To3D(StockSurface.Cached);
+
+                    // Note: Let the surface builder suppress degenerate facets
+                    if (toolTipRadius < DBL_EPSILON)
+                    {  // sharp v-groove
+                        bob.AddFacets(startTopOutsideEnd, current, next,
+                                      endTopOutsideStart);
+                        bob.AddFacets(startTopInside, current, next,
+                                      endTopInside);
+                    }
+                    else
+                    {                        // flat-bottomed v-groove
+                        bob.AddFacets(startTopOutsideEnd, startBottomOutsideEnd,
+                                      endBottomOutsideStart, endTopOutsideStart);
+                        bob.AddFacets(startBottomInside, startBottomOutsideEnd,
+                                      endBottomOutsideStart, endBottomInside);
+                        bob.AddFacets(startTopInside, startBottomInside,
+                                      endBottomInside, endTopInside);
+                    }
+
+                    // Compute ending pie wedge
+                    Point3F endBottomOutsideEnd, endTopOutsideEnd;
+                    var outDet = Vector2F.Determinant(currstep, outvector);
+                    if (beyond.IsUndefined || Math.Abs(outDet) < DBL_EPSILON)
+                    {
+                        endBottomOutsideEnd = endTopOutsideEnd
+                          = Point3F.Undefined;
+                    }
+                    else
+                    {
+                        endBottomOutsideEnd = Geometry.Add(
+                          next, Geometry.Multiply(-toolTipRadius,
+                                                  nextmiter.To3D()));
+                        endTopOutsideEnd = Geometry.Add(
+                          next.To2D(), Geometry.Multiply(-endCutRadius,
+                                                         nextmiter))
+                          .To3D(StockSurface.Cached);
+                        // Check for an actual bend that we need to join together
+                        if (Point3F.Distance(endTopOutsideStart,
+                                             endTopOutsideEnd) > DBL_EPSILON)
+                        {
+                            ComputeCutPartialCone(next.To2D(), endBottomInside,
+                                                  endTopOutsideStart, endBottomOutsideStart,
+                                                  endTopOutsideEnd, endBottomOutsideEnd,
+                                                  outDet, bob);
+                        }
+                    }
+
+                    // advance
+                    startCutRadius = endCutRadius;
+                    invector = currstep;
+                    current = next;
+                    currstep = outvector;
+                    currmiter = nextmiter;
+                    next = beyond;
+                    beyondi = toolpath.NextSegment(beyondi);
+
+                    startBottomInside = endBottomInside;
+                    startTopInside = endTopInside;
+                    startBottomOutsideStart = endBottomOutsideEnd;
+                    startTopOutsideStart = endTopOutsideEnd;
+                }
+                if (!toolpath.Closed)
+                {
+                    ComputeCutEndcap(current,
+                                     Geometry.Multiply(-1, currstep),
+                                     bob);
+                }
+                cutsurfaces.Add(bob.Build());
             }
-          }
-
-          // advance
-          startCutRadius = endCutRadius;
-          invector = currstep;
-          current = next;
-          currstep = outvector;
-          currmiter = nextmiter;
-          next = beyond;
-          beyondi = toolpath.NextSegment(beyondi);
-
-          startBottomInside = endBottomInside;
-          startTopInside = endTopInside;
-          startBottomOutsideStart = endBottomOutsideEnd;
-          startTopOutsideStart = endTopOutsideEnd;
         }
-        if (!toolpath.Closed) {
-          ComputeCutEndcap(current,
-                           Geometry.Multiply(-1, currstep),
-                           bob);
-        }
-        cutsurfaces.Add(bob.Build());
-      }
-      return cutsurfaces;
+        return cutsurfaces;
     }
-
+  
     internal void ComputeCutPartialCone(Point2F center, Point3F facetJoin,
                                         Point3F startTop, Point3F startBottom,
                                         Point3F endTop, Point3F endBottom,
@@ -939,7 +932,7 @@ namespace VEngraveForCamBam {
         outlines.Add((Polyline) item.Shape);
         FollowOutline(tseq, (Polyline) item.Shape, outlines,
                       item.EntityID, parentID: -1,
-                      offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                      offsetIndex: ref offsetIndex, depthIndex: depthIndex,
                       traceInside: true);
       } else if (item.Shape is Region) {
         ComputeRegionToolpaths(tseq, (Region) item.Shape, item.EntityID,
@@ -964,7 +957,7 @@ namespace VEngraveForCamBam {
       List<Polyline> outlines = new List<Polyline>(region.HoleCurves);
       outlines.Add(region.OuterCurve);
       FollowOutline(tseq, region.OuterCurve, outlines, entityID, parentID: -1,
-                    offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                    offsetIndex: ref offsetIndex, depthIndex: depthIndex,
                     traceInside: true);
       int holenum = 0;
       foreach (Polyline phole in region.HoleCurves) {
@@ -972,7 +965,7 @@ namespace VEngraveForCamBam {
                                                        entityID.SubItem1,
                                                        holenum++);
         FollowOutline(tseq, phole, outlines,
-                      offsetIndex: offsetIndex++, depthIndex: depthIndex,
+                      offsetIndex: ref offsetIndex, depthIndex: depthIndex,
                       outlineID: holeid, parentID: entityID.EntityID,
                       traceInside: false);
       }
@@ -980,7 +973,7 @@ namespace VEngraveForCamBam {
 
     internal void FollowOutline(
       ToolpathSequence tseq, Polyline outline, List<Polyline> outlines,
-      EntityIdentifier outlineID, int parentID, int offsetIndex,
+      EntityIdentifier outlineID, int parentID, ref int offsetIndex,
       int depthIndex, bool traceInside) {
       double dl = PathIncrement.Cached;
       _log.Log(DEBUG, "Following polyline {0}, direction: {1}",
@@ -1039,10 +1032,14 @@ namespace VEngraveForCamBam {
             Vector2F dp = Geometry.Multiply(dse.Unit(), adj_dl);
             Point2F current = start;
             while (stepsLeft-- >= 0) { // include both first and last points
-              lastRadius = AnalyzePoint(outline, i, current, curNormal,
-                                        Double.MaxValue, outlines,
-                                        startCornerType, endCornerType,
-                                        toolpath, leftIsInside);
+              double computedRadius = AnalyzePoint(outline, i, current,
+                                                   curNormal, Double.MaxValue,
+                                                   outlines, startCornerType,
+                                                   endCornerType, toolpath,
+                                                   leftIsInside);
+              if (computedRadius >= 0.0) {
+                lastRadius = computedRadius;
+              }
               // Be certain to hit the end exactly.  Overshoot causes issues.
               current = stepsLeft == 0 ? end : Geometry.Add(current, dp);
             }
@@ -1071,10 +1068,14 @@ namespace VEngraveForCamBam {
                 curNormal.Invert();
                 maxRadius = arcRadius;
               }
-              lastRadius = AnalyzePoint(outline, i, current, curNormal,
-                                        maxRadius, outlines,
-                                        startCornerType, endCornerType,
-                                        toolpath, leftIsInside);
+              double computedRadius = AnalyzePoint(outline, i, current,
+                                                   curNormal, maxRadius,
+                                                   outlines, startCornerType,
+                                                   endCornerType, toolpath,
+                                                   leftIsInside);
+              if (computedRadius >= 0.0) {
+                lastRadius = computedRadius;
+              }
               theta += dtheta;
               // Be certain to hit the end exactly.  Overshoot causes issues.
               if (stepsLeft > 0) {
@@ -1116,7 +1117,19 @@ namespace VEngraveForCamBam {
           start = end;
           adjustedStart = adjustedEnd;
         }
-        toolpath.CheckForClosed(PathIncrement.Cached);
+//<<<<<<< HEAD
+        // Close path if it loops
+        if (Point3F.Distance(toolpath.Points[0].Point,
+                             toolpath.Points[toolpath.Points.Count - 1].Point)
+            <= PathIncrement.Cached) {
+          toolpath.Add(toolpath.Points[0].Point);
+        }
+        // and add start and end points above surface
+        double zEndpoints = StockSurface.Cached + 10*PathIncrement.Cached;
+        toolpath.InsertSegmentBefore(
+            0, new PolylineItem(toolpath.FirstPoint.To2D().To3D(zEndpoints)));
+        toolpath.Add(toolpath.LastPoint.To2D().To3D(zEndpoints));
+
         _log.Log(DEBUG, "Adding {0} item toolpath for entity {1}",
                  toolpath.Points.Count, outlineID);
         tseq.Add(/* depthIndex */ 0,
@@ -1125,8 +1138,83 @@ namespace VEngraveForCamBam {
                  parentID,
                  toolpath,
                  outline.Direction,     // ???
-                 /* sourcepoint */ Point3F.Undefined,
-                 /* zoffset */ StockSurface.Cached);
+                 sourcepoint: Point3F.Undefined,
+                 // stock surface adustment moved to AnalyzePoint
+                 zoffset: 0);
+//=======
+        if (toolpath.Points.Count > 0) {
+          // Adjust start and end points if they are above the surface--
+          // this is needed because CamBam won't generate a starting rapid
+          // if the first point is above the surface.
+          while (toolpath.Points.Count >= 2
+              && toolpath.FirstPoint.Z > StockSurface.Cached) {
+            var firstPoint = toolpath.FirstPoint;
+            var secondPoint = toolpath.Points[toolpath.NextSegment(0)].Point;
+            if (secondPoint.Z >= StockSurface.Cached) {
+              _log.Log(DEBUG, "Removing extra point at {0}", firstPoint);
+              toolpath.Points.RemoveAt(0);
+            } else {
+              double fraction = (StockSurface.Cached - firstPoint.Z)
+                                / (secondPoint.Z - firstPoint.Z);
+              var correction = Geometry.Multiply(
+                new Vector3F(firstPoint, secondPoint), fraction);
+              var newFirstPoint = Geometry.Add(firstPoint, correction);
+              _log.Log(DEBUG, "Replacing point at {0} with {1}",
+                       firstPoint, newFirstPoint);
+              toolpath.Points.RemoveAt(0);
+              toolpath.InsertSegmentBefore(0, new PolylineItem(newFirstPoint));
+            }
+          }
+          while (toolpath.Points.Count >= 2
+              && toolpath.LastPoint.Z > StockSurface.Cached) {
+            var firstPoint = toolpath.Points[
+              toolpath.PrevSegment(toolpath.Points.Count - 1)].Point;
+            var secondPoint = toolpath.LastPoint;
+            if (firstPoint.Z >= StockSurface.Cached) {
+              _log.Log(DEBUG, "Removing extra point at {0}", secondPoint);
+              toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
+            } else {
+              double fraction = (StockSurface.Cached - firstPoint.Z)
+                                / (secondPoint.Z - firstPoint.Z);
+              var correction = Geometry.Multiply(
+                new Vector3F(firstPoint, secondPoint), fraction);
+              var newSecondPoint = Geometry.Add(firstPoint, correction);
+              _log.Log(DEBUG, "Replacing point at {0} with {1}",
+                       secondPoint, newSecondPoint);
+              toolpath.Points.RemoveAt(toolpath.Points.Count - 1);
+              toolpath.Add(newSecondPoint);
+            }
+          }
+          // Close path if it loops
+          if (toolpath.Points.Count > 1
+              && Point3F.Distance(
+                  toolpath.Points[0].Point,
+                  toolpath.Points[toolpath.Points.Count - 1].Point)
+              <= PathIncrement.Cached) {
+            toolpath.Add(toolpath.Points[0].Point);
+          }
+          // and add start and end points at surface
+          if (toolpath.FirstPoint.Z < StockSurface.Cached) {
+            toolpath.InsertSegmentBefore(
+                0, new PolylineItem(toolpath.FirstPoint.To2D()
+                                        .To3D(StockSurface.Cached)));
+          }
+          if (toolpath.LastPoint.Z < StockSurface.Cached) {
+            toolpath.Add(toolpath.LastPoint.To2D().To3D(StockSurface.Cached));
+          }
+          _log.Log(DEBUG, "Adding {0} item toolpath for entity {1}",
+                   toolpath.Points.Count, outlineID);
+          tseq.Add(/* depthIndex */ 0,
+                   offsetIndex++,
+                   outlineID,
+                   parentID,
+                   toolpath,
+                   outline.Direction,     // ???
+                   sourcepoint: Point3F.Undefined,
+                   // stock surface adustment moved to AnalyzePoint
+                   zoffset: 0);
+        }
+//>>>>>>> a3d025b631f07b7a3b20ed03d7299b3a9ee5ec01
       }
     }
 
@@ -1141,12 +1229,13 @@ namespace VEngraveForCamBam {
     }
 
     internal double AnalyzePoint(
-      Polyline currentOutline, int currentItem,
-      Point2F current, Vector2F normal, double maxRadius,
-      List<Polyline> outlines,
-      Geometry.CornerType startCornerType,
-      Geometry.CornerType endCornerType,
-      Polyline toolpath, bool leftIsInside) {
+        Polyline currentOutline, int currentItem,
+        Point2F current, Vector2F normal, double maxRadius,
+        List<Polyline> outlines,
+        Geometry.CornerType startCornerType,
+        Geometry.CornerType endCornerType,
+        Polyline toolpath, bool leftIsInside) {
+      bool radiusDetermined = maxRadius < Double.MaxValue;
       double radius = maxRadius;
       Polyline selectedPolyline = null;
       int selectedItem = -1;
@@ -1154,11 +1243,12 @@ namespace VEngraveForCamBam {
         PolylineItem[] point = outline.Points.ToArray();
         for (int i = 0; i < outline.Points.Count; ++i) {
           if (outline == currentOutline
-              && (startCornerType != Geometry.CornerType.SharpInside
-                  && i == currentOutline.PrevSegment(currentItem)
-                  || i == currentItem
-                  || endCornerType != Geometry.CornerType.SharpInside
-                  && i == currentOutline.NextSegment(currentItem))) {
+              && (i == currentItem
+                  // Skip adjacent segments for outside corners
+                  || (startCornerType == Geometry.CornerType.Outside
+                      && i == currentOutline.PrevSegment(currentItem))
+                  || (endCornerType == Geometry.CornerType.Outside
+                      && i == currentOutline.NextSegment(currentItem)))) {
             continue;
           }
 
@@ -1175,53 +1265,41 @@ namespace VEngraveForCamBam {
             tangentRadius = Geometry.RadiusToArc(
               current, normal, start, end, bulge);
           }
-          if (tangentRadius < radius) {
+          // Note--in a circle, maxRadius will equal radius,
+          // but we do want to generate a point.
+          if (tangentRadius <= radius) {
+            radiusDetermined = true;
             radius = tangentRadius;
             selectedPolyline = outline;
             selectedItem = i;
           }
         }
       }
-      Point3F toolpathPoint = new Point3F(
-        current.X + radius*normal.X,
-        current.Y + radius*normal.Y,
-        -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle);
-      //// Verify we didn't overlap adjacent segments when we skipped them.
-      //if (startCornerType != Geometry.CornerType.SharpInside
-      //    || endCornerType != Geometry.CornerType.SharpInside) {
-      //  Vector2F nearestNormal = new Vector2F();
-      //  int nearestSegment = currentItem;
-      //  Point3F nearestPoint = currentOutline.GetNearestPoint(
-      //      toolpathPoint.To2D(), ref nearestNormal, ref nearestSegment);
-      //  double nearestDistance = Point2F.Distance(toolpathPoint.To2D(),
-      //                                            nearestPoint.To2D());
-      //  if (nearestDistance < radius) {
-      //    //if (startCornerType == Geometry.CornerType.SmoothInside
-      //    //    && nearestSegment == currentOutline.PrevSegment(currentItem)) {
-      //    //  // TODO: What?
-      //    //} else if (endCornerType == Geometry.CornerType.SmoothInside
-      //    //    && nearestSegment == currentOutline.NextSegment(currentItem)) {
-      //    //  // TODO: What?
-      //    //} else {
-      //    _log.log(Math.Abs(nearestDistance - radius) > 1e-6 ? WARNING : TRACE,
-      //             "Bad point at {0}, distance was {1} but should have been "
-      //             + "{2}, adjusting.", current, radius, nearestDistance);
-      //      radius = nearestDistance;
-      //      toolpathPoint = new Point3F(
-      //          current.X + radius*normal.X,
-      //          current.Y + radius*normal.Y,
-      //          -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle);
-      //    //}
-      //  }
-      //}
-      // TODO: Refine this to use arc/beziers?
-      // TODO: Adjust for max depth
+      // Skip points on adjacent segments for smooth corners
+      if (startCornerType == Geometry.CornerType.SmoothInside
+              && selectedItem == currentOutline.PrevSegment(currentItem)
+          || endCornerType == Geometry.CornerType.SmoothInside
+              && selectedItem == currentOutline.NextSegment(currentItem)) {
+        return -1;
+      }
+
+      if (!radiusDetermined) {
+        _log.Log(ERROR, "Unable to determine radius at point {0} normal {1}",
+                 current, normal);
+        return -1;
+      }
+      // Constraint depth to MaxDepth and apply stock surface offset
+      double z = ComputeZFromRadius(ref radius);
+      Point3F toolpathPoint = new Point3F(current.X + radius*normal.X,
+                                          current.Y + radius*normal.Y,
+                                          z);
       if (toolpath.Points.Count >= 1
           && Point3F.Distance(toolpath.LastPoint,
                               toolpathPoint) < DBL_EPSILON) {
         // duplicate point, ignore it
         _log.Log(TRACE, "  Duplicate point at {0}, ignoring", toolpathPoint);
       } else {
+        // TODO: Refine this to use arc/beziers?
         if (toolpath.Points.Count >= 2
             && Geometry.PointBetween(
               toolpath.Points[toolpath.Points.Count - 2].Point,
@@ -1238,6 +1316,20 @@ namespace VEngraveForCamBam {
         toolpath.Add(toolpathPoint);
       }
       return radius;
+    }
+
+    // Compute Z from radius, adjusting radius for MaxDepth if required.
+    private double ComputeZFromRadius(ref double radius) {
+      double depth = -(radius - ToolTipDiameter.Cached/2)*_cotHalfVAngle;
+      if (depth < -MaxDepth.Cached) {
+        _log.Log(TRACE, "Adjusting depth, radius = {0}, computed depth = {1}, "
+                 + "MaxDepth = {2}", radius, depth, MaxDepth.Cached);
+        radius = MaxDepth.Cached/_cotHalfVAngle + ToolTipDiameter.Cached/2;
+        depth = -MaxDepth.Cached;
+        _log.Log(TRACE, "Adjusted radius = {0}, depth = {1}", radius, depth);
+      }
+      depth += StockSurface.Cached;
+      return depth;
     }
   }
 }
