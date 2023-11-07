@@ -162,11 +162,15 @@ namespace VEngrave_UnitTests {
       ToolpathSequence tseq = new ToolpathSequence(mop);
       var outline = LTop();
       var outlines = new List<Polyline>(new Polyline[] {outline});
+      int offsetIndex = 0;
       mop.FollowOutline(tseq, outline, outlines,
                         outlineID: new EntityIdentifier(1), parentID: -1,
-                        offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        offsetIndex: ref offsetIndex, depthIndex: 0,
+                        traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
+      Assert.AreEqual(1, offsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0]);
+      Assert.AreEqual(0, tseq.Toolpaths[0].OffsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
       Point3F npc1 = GetNearestPoint(
         tseq.Toolpaths[0].Toolpath,
@@ -192,11 +196,15 @@ namespace VEngrave_UnitTests {
       ToolpathSequence tseq = new ToolpathSequence(mop);
       var outline = Comma();
       var outlines = new List<Polyline>(new Polyline[] { outline });
+      int offsetIndex = 1;
       mop.FollowOutline(tseq, outline, outlines,
                         outlineID: new EntityIdentifier(1), parentID: -1,
-                        offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        offsetIndex: ref offsetIndex, depthIndex: 0,
+                        traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
+      Assert.AreEqual(2, offsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0]);
+      Assert.AreEqual(1, tseq.Toolpaths[0].OffsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
       Point3F npc1 = GetNearestPoint(tseq.Toolpaths[0].Toolpath,
                                      outline.Points[COMMA_LEFT_CORNER].Point);
@@ -217,11 +225,15 @@ namespace VEngrave_UnitTests {
       var outlines = new List<Polyline>(new Polyline[] { outline });
       var errorBox = TestVEngrave3DotCBErrorBoxBase1();
       var boundary = TestVEngrave3DotCBToolpathOuterBoundaryBase1();
+      int offsetIndex = 5;
       mop.FollowOutline(tseq, outline, outlines,
                         outlineID: new EntityIdentifier(1), parentID: -1,
-                        offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        offsetIndex: ref offsetIndex, depthIndex: 0,
+                        traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
+      Assert.AreEqual(6, offsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0]);
+      Assert.AreEqual(5, tseq.Toolpaths[0].OffsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
       foreach (PolylineItem point in tseq.Toolpaths[0].Toolpath.Points) {
         Assert.IsFalse(errorBox.PointInPolyline2(point.Point.To2D(), 0),
@@ -240,11 +252,15 @@ namespace VEngrave_UnitTests {
       var errorBox1 = TestVEngrave3DotCBErrorBox1Bang();
       var errorBox2 = TestVEngrave3DotCBErrorBox2Bang();
       var boundary = TestVEngrave3DotCBToolpathOuterBoundaryBang();
+      int offsetIndex = 3;
       mop.FollowOutline(tseq, outline, outlines,
                         outlineID: new EntityIdentifier(1), parentID: -1,
-                        offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        offsetIndex: ref offsetIndex, depthIndex: 0,
+                        traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
+      Assert.AreEqual(4, offsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0]);
+      Assert.AreEqual(3, tseq.Toolpaths[0].OffsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
       foreach (PolylineItem point in tseq.Toolpaths[0].Toolpath.Points) {
         Assert.IsFalse(errorBox1.PointInPolyline2(point.Point.To2D(), 0),
@@ -263,11 +279,15 @@ namespace VEngrave_UnitTests {
       var outlines = new List<Polyline>(new Polyline[] { outline });
       var errorBox = TestVEngrave4DotCBErrorBox();
       var boundary = TestVEngrave4DotCBToolpathOuterBoundary();
+      int offsetIndex = 0;
       mop.FollowOutline(tseq, outline, outlines,
                         outlineID: new EntityIdentifier(1), parentID: -1,
-                        offsetIndex: 0, depthIndex: 0, traceInside: true);
+                        offsetIndex: ref offsetIndex, depthIndex: 0,
+                        traceInside: true);
       Assert.AreEqual(1, tseq.Toolpaths.Count);
+      Assert.AreEqual(1, offsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0]);
+      Assert.AreEqual(0, tseq.Toolpaths[0].OffsetIndex);
       Assert.IsNotNull(tseq.Toolpaths[0].Toolpath);
       foreach (PolylineItem point in tseq.Toolpaths[0].Toolpath.Points) {
         Assert.IsFalse(errorBox.PointInPolyline2(point.Point.To2D(), 0),

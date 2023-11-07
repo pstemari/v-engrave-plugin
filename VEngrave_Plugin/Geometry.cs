@@ -199,8 +199,27 @@ namespace VEngraveForCamBam {
         if (distanceToCenter2 < arcRadius*arcRadius) {
           // then we're inside the circle and have the concave case
           double denom = 2*(arcRadius - normalDotCenterMinusPos);
-          // normal . (C-P) < |C-P| < Ra, ergo denom != 0
-          radius = (arcRadius*arcRadius - distanceToCenter2)/denom;
+
+            /*AHAH!!!! this 'ergo' by Paul, below, does not hold true!  denom CAN be zero, and that causes a divide-by-zero failure
+              with circles and some arcs.
+            */
+            // per Paul...
+
+            // normal . (C-P) < |C-P| < Ra, ergo denom != 0
+            
+            /*  SO... this fix... which has to be tested with 'funny' arcs, not just circles  03/02/2014 by L.E.S.
+            It is always postive because radius is always an absolute value, and is computed below from two squares,
+            which by definition are always positive.  I could have just added DBL_EPSILON to the denom calculation
+            above, but that would slightly change EVERY calculation, not merely when denom=0... just bad practice.
+            */
+                    if (denom == 0)
+                    {
+                        denom = DBL_EPSILON;  // smallest value a double can be
+                    }
+           //  End of AHAH!
+
+
+                    radius = (arcRadius*arcRadius - distanceToCenter2)/denom;
           directionToContactPoint = -1;
         } else {
           // We're outside the circle of the arc and have the convex case.

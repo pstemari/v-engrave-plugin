@@ -32,6 +32,64 @@ namespace VEngrave_UnitTests {
   public class CutWidthTests {
     private const double DEGREES = Math.PI/180;
 
+    [TestMethod, TestCategory("Repro")]
+    public void TestBigE() {
+      var mop = CreateMOP();
+      var outline = CreateBigE();
+      var tseq = CreateToolpathSequence(mop, outline);
+      List<Surface> cutwidths = mop.ComputeCutSurfaces(tseq.Toolpaths);
+      foreach (Surface s in cutwidths) {
+        foreach (Point3F p in s.Points) {
+          //Assert.IsTrue(outline.PointInPolyline2(p.To2D(), 1e-6),
+          //              "Bad point {0}", p);
+        }
+      }
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestCatullLittleL() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestCatullLittleD() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestCatullBigS() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestCatullLittleT() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestCatullLittleA() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestBrusselsBigH() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestBrusselsLittleL() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestBrusselsComma() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestBrusselsLittleA() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestBrusselsLittleM() {
+    }
+
+    [TestMethod, TestCategory("Repro")]
+    public void TestBrusselsBang() {
+    }
+
     private ToolpathSequence CreateToolpathSequence(MOPVEngrave mop,
                                                     Entity shape) {
       mop.ClearToolpaths();
