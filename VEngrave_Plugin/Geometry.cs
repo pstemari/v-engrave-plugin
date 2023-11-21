@@ -200,26 +200,27 @@ namespace VEngraveForCamBam {
           // then we're inside the circle and have the concave case
           double denom = 2*(arcRadius - normalDotCenterMinusPos);
 
-            /*AHAH!!!! this 'ergo' by Paul, below, does not hold true!  denom CAN be zero, and that causes a divide-by-zero failure
-              with circles and some arcs.
-            */
-            // per Paul...
+          /*AHAH!!!! this 'ergo' by Paul, below, does not hold true!
+                      denom CAN be zero, and that causes a
+                      divide-by-zero failure with circles and some arcs. */
+          // per Paul...
 
-            // normal . (C-P) < |C-P| < Ra, ergo denom != 0
-            
-            /*  SO... this fix... which has to be tested with 'funny' arcs, not just circles  03/02/2014 by L.E.S.
-            It is always postive because radius is always an absolute value, and is computed below from two squares,
-            which by definition are always positive.  I could have just added DBL_EPSILON to the denom calculation
-            above, but that would slightly change EVERY calculation, not merely when denom=0... just bad practice.
-            */
-                    if (denom == 0)
-                    {
-                        denom = DBL_EPSILON;  // smallest value a double can be
-                    }
-           //  End of AHAH!
+          // normal . (C-P) < |C-P| < Ra, ergo denom != 0
 
+          /*  SO... this fix... which has to be tested with 'funny'
+                    arcs, not just circles 03/02/2014 by L.E.S. It is
+                    always postive because radius is always an absolute
+                    value, and is computed below from two squares, which
+                    by definition are always positive. I could have just
+                    added DBL_EPSILON to the denom calculation above,
+                    but that would slightly change EVERY calculation,
+                    not merely when denom=0... just bad practice. */
+          if (denom == 0) {
+            denom = DBL_EPSILON;  // smallest value a double can be
+          }
+          //  End of AHAH!
 
-                    radius = (arcRadius*arcRadius - distanceToCenter2)/denom;
+          radius = (arcRadius*arcRadius - distanceToCenter2)/denom;
           directionToContactPoint = -1;
         } else {
           // We're outside the circle of the arc and have the convex case.
@@ -247,22 +248,21 @@ namespace VEngraveForCamBam {
       // test is unreliable since CP-S can be very small and its direction
       // becomes indeterminate.
       var startToCP = new Vector2F(start, contactPoint);
-      if (Math.Sign(Vector2F.Determinant(startToCP, darc))
-          == Math.Sign(bulge)) {
-      // Testing direction from the arc center doesn't
-      // require such small differences, but the cross-products flip sign for
-      // angles > 180.
-      //var centerStart = new Vector2F(arcCenter, start);
-      //var centerContactPoint = new Vector2F(arcCenter, contactPoint);
-      //var centerEnd = new Vector2F(arcCenter, end);
-      //var dirStartContactPoint = Math.Sign(
-      //    Vector2F.Determinant(centerStart, centerContactPoint));
-      //var dirStartEnd = Math.Sign(
-      //    Vector2F.Determinant(centerStart, centerEnd));
-      //var dirContactPointEnd = Math.Sign(
-      //    Vector2F.Determinant(centerContactPoint, centerEnd));
-      //if (dirStartContactPoint == dirStartEnd
-      //    && dirContactPointEnd == dirStartEnd)  {
+      if (Math.Sign(Vector2F.Determinant(startToCP, darc)) == Math.Sign(bulge)) {
+        // Testing direction from the arc center doesn't
+        // require such small differences, but the cross-products flip sign for
+        // angles > 180.
+        //var centerStart = new Vector2F(arcCenter, start);
+        //var centerContactPoint = new Vector2F(arcCenter, contactPoint);
+        //var centerEnd = new Vector2F(arcCenter, end);
+        //var dirStartContactPoint = Math.Sign(
+        //    Vector2F.Determinant(centerStart, centerContactPoint));
+        //var dirStartEnd = Math.Sign(
+        //    Vector2F.Determinant(centerStart, centerEnd));
+        //var dirContactPointEnd = Math.Sign(
+        //    Vector2F.Determinant(centerContactPoint, centerEnd));
+        //if (dirStartContactPoint == dirStartEnd
+        //    && dirContactPointEnd == dirStartEnd) {
         // Contact point is between the arc's endpoint, check that
         // we're on the correct side of the position
         if (radius < 0) {
@@ -360,6 +360,7 @@ namespace VEngraveForCamBam {
     public static Vector3F Bisect(Vector3F a, Vector3F b) {
       return Add(a.Unit(), b.Unit()).Unit();
     }
+
     // See http://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
     public static double DistanceFromLineToPoint(Point3F origin,
                                                  Vector3F direction,
